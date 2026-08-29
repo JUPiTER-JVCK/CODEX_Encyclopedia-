@@ -1,0 +1,32 @@
+graph TD
+    Root["🗂️ core-app.jsx — ONE FILE<br/>(all 8 current files merged)"]
+
+    Root --> Shell["🎨 Shared Shell — written ONCE<br/>Theme (day/night), fonts, icon set<br/>Code · P · Callout · MemoryHook · DeepDive<br/>DataTable · ModeToggle · SegToggle · TopicMap<br/>(currently duplicated identically in all 8 files)"]
+
+    Root --> Content["📚 Phase Content Blocks<br/>(kept separate, just renamed to avoid clashes)"]
+    Content --> C0["TOPICS_LOGIC (35 ch)<br/>+ GateSimulator, BaseConverter, BitwiseVisualizer"]
+    Content --> C1["TOPICS_HARDWARE (30 ch)<br/>+ CPUCycleStepper, MemoryHierarchyVisualizer,<br/>FullStackDiagram, BusWidthChart, SpectrumDiagram"]
+    Content --> C2["TOPICS_CLI (31 ch)<br/>+ ChmodCalculator, FilesystemTreeDiagram"]
+    Content --> C3["TOPICS_PROGRAMMING (30 ch)<br/>+ CodeTracer, DataStructureDiagram, CompiledSpectrum"]
+    Content --> C4["TOPICS_WEB (30 ch)<br/>+ BoxModelVisualizer"]
+    Content --> C5["TOPICS_NETWORKING (30 ch)<br/>+ SubnetCalculator, OSIStackDiagram, HttpStatusDiagram"]
+    Content --> C6["TOPICS_SECURITY (30 ch)<br/>+ AttackLifecycleStepper, HatCards"]
+
+    Root --> Toolkit["🧰 Toolkit content<br/>GlossaryTool · VisualLibraryTool · PlaygroundTool<br/>(41 terms, 8 ref cards, live JS/HTML playground)"]
+
+    Root --> AppRoot["🧭 New Master App Root<br/>(replaces the 8 separate App roots)"]
+
+    AppRoot --> Storage["💾 ONE unified storage key<br/>'core-app-progress-v1'<br/>topic ids namespaced: 'logic:gates', 'hardware:cpu'...<br/>(currently 8 separate storage keys — will NOT auto-merge old progress)"]
+
+    AppRoot --> MasterHub["🏠 New: Master Hub screen<br/>7 phase cards + Toolkit card<br/>overall progress ring across ALL 216 chapters"]
+
+    MasterHub --> PhaseHub["Existing per-phase Hub<br/>(topic map + topic cards — unchanged)"]
+    PhaseHub --> TopicPage["Existing TopicPage / ReferenceView<br/>(chapters, simulators, recap — unchanged)"]
+
+    AppRoot --> GlobalReview["🔁 Upgraded Review screen<br/>NOW pulls due items from ALL 7 phases<br/>at once, not just one module<br/>(genuine improvement — one queue instead of 8)"]
+
+    style Root fill:#dd8060,color:#fff
+    style AppRoot fill:#7fa9d4,color:#fff
+    style Storage fill:#b99ad4,color:#fff
+    style GlobalReview fill:#8ba173,color:#fff
+    style MasterHub fill:#8ba173,color:#fff
