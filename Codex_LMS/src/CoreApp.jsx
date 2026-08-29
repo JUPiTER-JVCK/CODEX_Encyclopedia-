@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext } from "react";
+import { getItem, setItem } from "./storage.js";
 
 /* ══════════════════════════════════════════════════
    SECURITY & ETHICAL HACKING — Phase 6 (Capstone)
@@ -4604,9 +4605,9 @@ export default function CoreApp() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await window.storage.get(STORAGE_KEY);
-        if (!cancelled && res && res.value) {
-          const data = JSON.parse(res.value);
+        const raw = await getItem(STORAGE_KEY);
+        if (!cancelled && raw) {
+          const data = JSON.parse(raw);
           if (data.completed) setCompleted(data.completed);
           if (data.reviewItems) setReviewItems(data.reviewItems);
           if (data.readMode) setReadMode(data.readMode);
@@ -4619,7 +4620,7 @@ export default function CoreApp() {
   const persist = (patch) => {
     (async () => {
       try {
-        await window.storage.set(STORAGE_KEY, JSON.stringify({ completed, reviewItems, readMode, ...patch }));
+        await setItem(STORAGE_KEY, JSON.stringify({ completed, reviewItems, readMode, ...patch }));
       } catch (e) { /* progress just won't persist this session */ }
     })();
   };
