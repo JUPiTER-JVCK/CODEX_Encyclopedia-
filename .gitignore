@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Swift / SwiftPM
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+
+# Built app bundle (regenerate with package_app.sh)
+Codex.app/
+
+# macOS
+.DS_Store
