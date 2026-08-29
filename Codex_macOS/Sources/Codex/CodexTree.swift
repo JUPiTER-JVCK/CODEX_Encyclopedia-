@@ -82,6 +82,19 @@ extension CodexNode {
 
 enum CodexTree {
 
+    /// Directories that live in the repository but hold no codex content:
+    /// the sibling apps, their dependencies, and build output. Pruned from
+    /// both the sidebar tree and the command palette's file index.
+    static let nonContentDirs: Set<String> = [
+        "codex_tui",
+        "Codex_macOS",
+        "Codex_LMS",
+        "Codex.app",
+        "node_modules",
+        "dist",
+        ".build",
+    ]
+
     static let bands: [(String, [String])] = [
         ("Foundations",    ["00_", "00b_", "00c_", "00d_"]),
         ("Compute",        ["01_", "02_", "03_", "04_", "05_", "06_", "07_", "08_"]),
@@ -209,10 +222,10 @@ enum CodexTree {
             (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
                 && !$0.lastPathComponent.hasPrefix(".")
                 && !$0.lastPathComponent.hasPrefix("_")
+                // Network holds real content but is banded separately below,
+                // so it is not a top-level layer.
                 && $0.lastPathComponent != "Network"
-                && $0.lastPathComponent != "codex_tui"
-                && $0.lastPathComponent != "Codex_macOS"
-                && $0.lastPathComponent != "Codex.app"
+                && !nonContentDirs.contains($0.lastPathComponent)
         }.sorted { $0.lastPathComponent < $1.lastPathComponent }
     }
 
@@ -246,10 +259,14 @@ enum CodexTree {
         ) else { return [] }
         var files: [URL] = []
         for case let url as URL in enumerator {
-            let parts = url.pathComponents
-            if parts.contains("codex_tui") || parts.contains("_assets") ||
-               parts.contains(".build") || parts.contains("Codex.app") ||
-               parts.contains("Codex_macOS") { continue }
+            // Skipping the directory itself prunes the whole subtree, so a
+            // node_modules never gets walked rather than being walked and
+            // filtered file by file.
+            let name = url.lastPathComponent
+            if nonContentDirs.contains(name) || name == "_assets" {
+                enumerator.skipDescendants()
+                continue
+            }
             if url.pathExtension == "md" { files.append(url) }
         }
         return files.sorted { $0.path < $1.path }
