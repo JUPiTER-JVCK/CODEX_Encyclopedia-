@@ -16,7 +16,10 @@ updated: 2026-06-07
 |------|--------|
 | [POSIX Syscalls](./posix_syscalls.md) | Categories, calling convention, error handling |
 
-|-------|--------------|
+## Portability standards
+
+| Standard | Owner | Scope |
+|----------|-------|-------|
 | POSIX (IEEE 1003.1) | Open Group / IEEE | API surface for portable Unix code |
 | SUSv4 / SUSv5 | Open Group | Single Unix Specification |
 | LSB (Linux Standard Base) | LF | Distro ABI compatibility (largely historical now) |

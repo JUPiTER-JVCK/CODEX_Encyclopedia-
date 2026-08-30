@@ -33,7 +33,11 @@
 - [protocols/](protocols/INDEX.md) — interview process conventions
 
 ## Anchor reference
-- `references/100_leetcode_problems.pdf` — user's curated PDF (copied from `~/Desktop/Folder 3/`)
+- `references/100_leetcode_problems.pdf` — a curated third-party problem
+  list, vendored here for personal reference. Redistribution status is
+  unconfirmed; treat it as not redistributable. The extracted problem
+  list lives in [topics/100_must_do.md](topics/100_must_do.md), which is
+  the citable form.
 
 ## Cross-references
 - Runtime / language performance → [07_Runtime_Environment](../07_Runtime_Environment/)

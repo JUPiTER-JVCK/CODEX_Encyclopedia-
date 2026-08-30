@@ -1,7 +1,8 @@
 # Digital Circuits — Topics
 
 ## Number systems
-- **Binary, octal, decimal, hexadecimal** — base conversions; see v1 `~/Documents/Information_Tech/- Math:Logic:Data/Numbering/`
+- **Binary, octal, decimal, hexadecimal** — base conversions; migrated from
+  the v1 number-systems notes
 - **Signed representations** — sign-magnitude, 1's complement, **two's complement** (standard), excess/biased
 - **BCD**, **gray code** (rotary encoders, low-glitch counters)
 - **Fixed-point**, **block floating-point**

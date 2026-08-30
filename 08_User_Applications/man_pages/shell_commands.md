@@ -244,7 +244,7 @@ installed. Same concept: persistent sessions, multiple windows.
 | `Ctrl+a n` / `p` | Next / previous |
 | `Ctrl+a "` | Window list |
 | `Ctrl+a S` | Split horizontal |
-| `Ctrl+a |` | Split vertical |
+| `Ctrl+a \|` | Split vertical |
 | `Ctrl+a d` | Detach |
 | `Ctrl+a k` | Kill window |
 | `Ctrl+a [` | Copy/scroll mode |

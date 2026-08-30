@@ -25,15 +25,34 @@ floods the command palette.
 
 ## File and folder naming
 
-- Lowercase throughout, except the numeric layer prefix (`05_OS_Kernel/`).
-- Words joined with underscores: `system_calls.md`, never `system-calls.md`.
-- Layer folders take a two-digit prefix for sort order; the foundational
-  layers below 01 use a letter suffix (`00b_`, `00c_`, `00d_`).
-- Every sub-section folder has an `INDEX.md` as its entry point.
+Words are joined with underscores everywhere — `system_calls.md`, never
+`system-calls.md`. Capitalization depends on what the thing is:
+
+| Kind | Case | Example |
+|------|------|---------|
+| Content notes | lowercase | `virtual_memory.md`, `logic_gates.md` |
+| Sub-section folders | lowercase | `topics/`, `man_pages/` |
+| Layer folders | numeric prefix + `Title_Case` | `05_OS_Kernel/`, `00b_Devices/` |
+| Entry-point files | `SCREAMING_CASE` | `INDEX.md`, `README.md` |
+| Root documents | `SCREAMING_CASE` | `LAYERS.md`, `STRUCTURE.md` |
+| Band and app folders | `Title_Case` | `Network/`, `Codex_macOS/` |
+
+Layer folders take a two-digit prefix for sort order; the foundational layers
+below 01 use a letter suffix (`00b_`, `00c_`, `00d_`). Every sub-section
+folder has an `INDEX.md` as its entry point.
 
 ## Frontmatter
 
-Every content note opens with YAML frontmatter:
+**Content notes** carry YAML frontmatter. **Entry points do not** — `INDEX.md`
+and `README.md` are navigation, and their heading plus intro line already say
+what they are. Root documents (`LAYERS.md`, `STRUCTURE.md`, `CHANGELOG.md`)
+are likewise exempt.
+
+That split is what the tree actually looks like: 110 notes carry frontmatter,
+and the 164 files without it are entry points and root documents. A note that
+teaches something needs the metadata; a file that lists links does not.
+
+A content note opens like this:
 
 ```yaml
 ---
@@ -51,8 +70,8 @@ related:
 Required: `title`, `layer`, `section`, `tags`, `updated`.
 Optional: `related`, `source`, `confidence`, `status`.
 
-Every file must also carry an H1 heading after the frontmatter. The macOS
-app uses the first H1 for tab titles, falling back to the filename.
+Every file carries an H1 heading, frontmatter or not — the macOS app uses
+the first H1 for tab titles, falling back to the filename.
 
 ## Sub-sections
 

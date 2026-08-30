@@ -62,6 +62,45 @@ exist here, and pointed at paths on one particular Mac.
 - **`Codex_LMS/README.md`** — new; documents the storage backends and the
   smoke test
 
+### Fixed — malformed markdown tables
+
+Eleven tables across the codex rendered as literal text rather than tables.
+Copilot's review on this PR flagged two; a scan for the pattern found nine
+more.
+
+Five are the protocol `INDEX.md` files that v3.0 recorded as gaining
+frontmatter and an H1 — that edit inserted a "Dedicated Protocol References"
+table at the top of each and clobbered the *following* table's section
+heading and header row, leaving an orphaned separator. Restored in
+`05_OS_Kernel`, `07_Runtime_Environment`, `16_RF_Wireless`,
+`18_Embedded_Systems`, and `19_Industrial_Protocols`.
+
+Four more are unescaped `|` inside inline code — GitHub treats a pipe as a
+cell separator even within backticks — in `shell_commands.md`,
+`javascript.md`, and `python.md` (twice). Two rows in
+`14_Security/man_pages/INDEX.md` were missing their second cell.
+
+`tools/table_audit.py` checks for all three faults and gates on them.
+
+### Fixed — non-portable references
+
+Twenty-five references to paths on one particular machine
+(`~/Documents/…`, `~/Desktop/…`) across ten files, rewritten as provenance
+notes that keep the "migrated from v1" information without the absolute
+path. The two vendored PDFs now carry explicit redistribution status:
+the LeetCode list is marked not-redistributable with the extracted
+`100_must_do.md` given as the citable form, and the embedded roadmap points
+at Parvizi's CC BY-SA 4.0 original. `CHANGELOG.md`'s own v2.1 migration
+notes keep their paths — they are a record of what happened.
+
+### Fixed — conventions that did not match the repository
+
+`STRUCTURE.md` claimed filenames are lowercase throughout and that every
+content note carries frontmatter. Neither held: `Network/`, `INDEX.md`, and
+`Codex_macOS/` are capitalized, and 164 of 274 files have no frontmatter.
+Replaced with a table of what each kind of file actually uses, and an
+explicit exemption for entry points and root documents.
+
 ### Known issues recorded, not yet fixed
 
 An audit of the 13 Swift sources found the markdown pipeline re-parsing a

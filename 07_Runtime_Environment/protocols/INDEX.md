@@ -16,7 +16,10 @@ updated: 2026-06-07
 |------|--------|
 | [OCI Runtime/Image/Distribution Specs](./oci_runtime.md) | Container lifecycle, image format, registry API |
 
-|--------------|
+## Language & bytecode specs
+
+| Spec | Covers |
+|------|--------|
 | JVMS | JVM bytecode, class file format |
 | ECMA-335 (CLI) | .NET intermediate language, metadata, type system |
 | ECMA-262 (ECMAScript) | JavaScript language |

@@ -35,4 +35,5 @@
 - nptel.ac.in physics courses
 
 ## V1 cross-reference
-- `~/Documents/Information_Tech/- Security : OSINT/Encryption/quantum/` — quantum crypto notes (also referenced from [14_Security](../../14_Security/))
+- Quantum-cryptography notes (v1 collection) — also referenced from
+  [14_Security](../../14_Security/)
