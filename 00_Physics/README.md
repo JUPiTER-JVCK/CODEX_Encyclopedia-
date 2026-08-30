@@ -37,7 +37,7 @@
 - Where signals become information → [00c_Analog_Circuits](../00c_Analog_Circuits/)
 - RF propagation in air → [16_RF_Wireless](../16_RF_Wireless/topics/INDEX.md)
 - Cryptographic randomness from physical sources → [14_Security/topics](../14_Security/topics/INDEX.md)
-- Quantum crypto (v1 reference: `~/Documents/Information_Tech/- Security : OSINT/Encryption/quantum/`)
+- Quantum crypto (migrated from the v1 encryption notes)
 
 ## Layer ladder (per image reference)
 

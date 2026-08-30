@@ -17,7 +17,10 @@ updated: 2026-06-07
 | [Modbus](./modbus.md) | RTU/ASCII/TCP, function codes, register model |
 | [OPC UA](./opc_ua.md) | Information model, security, PubSub, TSN |
 
-----|------|-------|
+## Fieldbus (serial)
+
+| Protocol | Standard | Notes |
+|----------|----------|-------|
 | Modbus RTU | Modbus Org (MAP V1.1b3) | RS-485, 1 master / N slaves |
 | Modbus ASCII | same | ASCII variant |
 | Modbus TCP | same | Port 502 |

@@ -18,7 +18,10 @@ updated: 2026-06-07
 | [Bluetooth / BLE](./bluetooth.md) | GATT, pairing, LE Audio, BT Mesh |
 | [LoRaWAN](./lorawan.md) | Classes, OTAA/ABP, ADR, regional params |
 
-----|-----------|---------|------|
+## Wi-Fi (802.11)
+
+| Standard | Marketing name | Band | Year |
+|----------|----------------|------------|------|
 | 802.11a | — | 5 GHz | 1999 |
 | 802.11b | — | 2.4 GHz | 1999 |
 | 802.11g | — | 2.4 GHz | 2003 |

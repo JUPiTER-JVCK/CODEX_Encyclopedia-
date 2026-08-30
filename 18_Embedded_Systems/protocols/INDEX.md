@@ -17,7 +17,10 @@ updated: 2026-06-07
 | [I2C and SPI](./i2c_spi.md) | Timing, addressing, modes, QSPI |
 | [UART](./uart.md) | Framing, baud rate, RS-232/422/485 |
 
-----|--------------------|
+## Low-speed
+
+| Protocol | Owning codex layer |
+|----------|--------------------|
 | UART (RS-232 / RS-485 / TTL serial) | [01](../../01_Circuit_Board/protocols/INDEX.md), [10_DataLink](../../Network/10_Network_DataLink/protocols/INDEX.md) |
 | I²C | [01_Circuit_Board](../../01_Circuit_Board/protocols/INDEX.md) |
 | SPI | [01_Circuit_Board](../../01_Circuit_Board/protocols/INDEX.md) |

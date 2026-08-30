@@ -10,9 +10,11 @@
 - *FPGA Prototyping by SystemVerilog Examples* — Pong P. Chu.
 
 ## V1 cross-references
-- `~/Documents/Information_Tech/- Math:Logic:Data/Logic/BOOLEAN LOGIC GATES.html`
-- `~/Documents/Information_Tech/- Math:Logic:Data/Logic/Formal_Logic.pdf`
-- `~/Documents/Information_Tech/- Math:Logic:Data/Numbering/` — number systems
+- *Boolean logic gates* HTML reference — migrated from the v1 collection;
+  content preserved in [topics/logic_gates.md](../topics/logic_gates.md)
+- *Formal Logic* (PDF) — v1 collection, not redistributed here
+- Number-systems notes — v1 collection; see
+  [topics/INDEX.md](../topics/INDEX.md) for the migrated material
 
 ## Online
 - Nand2Tetris — build a CPU from NAND

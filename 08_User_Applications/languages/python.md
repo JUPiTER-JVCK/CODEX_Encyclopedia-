@@ -179,8 +179,8 @@ updated: 2026-05-20
 | Version | Notable additions |
 |---------|-------------------|
 | 3.8 | Walrus `:=`, positional-only `/`, `Literal`, `Final`, `TypedDict` |
-| 3.9 | `dict | dict` merge, `list[int]` generic builtins, `zoneinfo` |
-| 3.10 | `match` statement, `X | Y` type union, parenthesized context managers |
+| 3.9 | `dict \| dict` merge, `list[int]` generic builtins, `zoneinfo` |
+| 3.10 | `match` statement, `X \| Y` type union, parenthesized context managers |
 | 3.11 | ~10-60% faster, exception groups + `except*`, `tomllib` |
 | 3.12 | f-string grammar overhaul, type-param syntax, `@override` |
 | 3.13 | Free-threaded build (no-GIL preview), JIT (experimental), iOS/Android tier-3 |

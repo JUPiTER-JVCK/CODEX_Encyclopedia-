@@ -5,7 +5,7 @@ section: topics
 tags: [logic-gates, boolean, truth-tables, combinational]
 updated: 2026-05-20
 source_image: ../../_assets/logic_gates_explained.png
-v1_source: ~/Documents/Information_Tech/- Math:Logic:Data/Logic/BOOLEAN LOGIC GATES.html
+v1_source: v1 collection — Math/Logic/Data › Logic › Boolean logic gates (HTML)
 ---
 
 # Logic Gates Explained
@@ -173,5 +173,6 @@ That's why NAND/NOR are the most common standard-cell library primitives.
 - Transistor-level construction → [00b_Devices/topics](../../00b_Devices/topics/INDEX.md) (CMOS section)
 - Built into adders / multiplexers → [topics/INDEX.md](INDEX.md) (combinational logic)
 - Synthesized from HDL → [languages/INDEX.md](../languages/INDEX.md)
-- V1 HTML reference: `~/Documents/Information_Tech/- Math:Logic:Data/Logic/BOOLEAN LOGIC GATES.html`
+- Migrated from the v1 *Boolean logic gates* HTML reference; the truth
+  tables above are the full transcription, so the original is not needed
 - Source image: `_assets/logic_gates_explained.png` (drop the image here)

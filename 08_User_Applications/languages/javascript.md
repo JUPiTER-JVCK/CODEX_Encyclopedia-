@@ -105,7 +105,7 @@ updated: 2026-05-20
 | Iteration helpers | `Array.from`, `Array.of`, `flat`, `flatMap`, `Object.{keys,values,entries,fromEntries}` |
 | Regex | `/.../g/i/m/s/u/y` flags, named groups `(?<name>...)`, lookbehind |
 | Errors | `try/catch/finally`, `.cause`, custom `class X extends Error` |
-| Optional chaining | `obj?.a?.b?.()`, nullish coalescing `??`, logical assign `??=` `||=` `&&=` |
+| Optional chaining | `obj?.a?.b?.()`, nullish coalescing `??`, logical assign `??=` `\|\|=` `&&=` |
 | Top-level await | In ESM only |
 | Classes | private `#field`, static blocks, decorators (stage 3) |
 

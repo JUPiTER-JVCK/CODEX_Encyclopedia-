@@ -68,12 +68,12 @@
 | `velociraptor` | Endpoint hunt + collection |
 | `chainsaw`, `hayabusa` | Windows event log triage |
 | `kape` | Triage collection (Windows) |
-| `volatility` plugins, `rekall` (archival) |
+| `volatility` plugins, `rekall` (archival) | Memory forensics |
 
 ## Malware analysis / RE
 | Tool | Purpose |
 |------|---------|
-| `ghidra`, `cutter` (rizin), `radare2`, `r2`, `binaryninja`, `ida` |
+| `ghidra`, `cutter` (rizin), `radare2`, `r2`, `binaryninja`, `ida` | Disassembly & decompilation |
 | `pestudio`, `die` (Detect It Easy) | PE triage |
 | `floss` | Obfuscated string extraction |
 | `cape-sandbox`, `cuckoo`, `triage` | Dynamic sandboxes |

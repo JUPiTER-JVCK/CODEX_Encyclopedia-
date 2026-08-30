@@ -18,6 +18,6 @@
 - OSHW community boards: Raspberry Pi, Arduino, BeagleBoard
 
 ## Migration from v1
-- `~/Documents/Information_Tech/- Hardware/` → drop datasheets here
-- `~/Documents/Information_Tech/- Hardware/- SBC/` → SBC-specific docs
-- `~/Documents/Information_Tech/Cloud_Desktop/DL_020_datasheet.pdf` → product datasheet
+- General hardware datasheets (v1 collection) → drop them in this folder
+- SBC-specific documentation (v1 collection)
+- `DL_020_datasheet.pdf` — product datasheet, not yet migrated

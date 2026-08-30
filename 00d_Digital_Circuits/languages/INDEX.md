@@ -42,5 +42,5 @@
 - formal: SymbiYosys, JasperGold
 
 ## V1 cross-reference
-- `~/Documents/Information_Tech/- Math:Logic:Data/Numbering/` — binary/hex/octal lookup
-- `~/Documents/Information_Tech/- Math:Logic:Data/Logic/` — logic foundations
+- Number-systems notes (v1 collection) — binary/hex/octal lookup
+- Logic foundations (v1 collection)

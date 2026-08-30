@@ -1,7 +1,9 @@
 # Embedded Systems — References
 
 ## Anchor (user-supplied)
-- **`embedded_systems_full_roadmap_book.pdf`** — copied from v1 `~/Documents/Information_Tech/- Hardware/`
+- **`embedded_systems_full_roadmap_book.pdf`** — currently a generated
+  placeholder, not the real book. Obtain the original from the authorized
+  source below.
 - **Roadmap image** — Meysam Parvizi, *Embedded Systems Engineering Roadmap* v1.2.3 (2023-12-23)
   - GitHub: `https://github.com/m3y54m/Embedded-Engineering-Roadmap`
   - License: CC BY-SA 4.0

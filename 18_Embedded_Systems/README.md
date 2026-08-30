@@ -72,6 +72,8 @@
 - Edge AI → [15_AI_ML/topics](../15_AI_ML/topics/INDEX.md)
 
 ## Anchor reference
-- `references/embedded_systems_full_roadmap_book.pdf` — full Embedded Systems Roadmap book (copied from v1 `~/Documents/Information_Tech/- Hardware/`)
+- `references/embedded_systems_full_roadmap_book.pdf` — placeholder for the
+  Embedded Systems Roadmap book. Original by Meysam Parvizi (CC BY-SA 4.0)
+  at [github.com/m3y54m/Embedded-Engineering-Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap)
 - Image source: roadmap by Meysam Parvizi, CC BY-SA 4.0
   (`https://github.com/m3y54m/Embedded-Engineering-Roadmap`)
