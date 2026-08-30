@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anatomy of a Program</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --ink:       #0f0e0c;
+    --paper:     #f7f4ee;
+    --warm:      #e8e2d6;
+    --rule:      #c8bfaf;
+    --accent:    #1a3a2a;
+    --highlight: #4a7c5f;
+    --dim:       #7a7166;
+    --code-bg:   #1a1a18;
+    --code-fg:   #b8c9a0;
+    --code-key:  #7ecba1;
+    --code-val:  #d4a574;
+    --code-dim:  #5a6350;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.75;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  /* ── BOOK HEADER ── */
+  .book-header {
+    border-top: 3px solid var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding: 2.5rem 0 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+  .book-series {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 0.6rem;
+  }
+  .book-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--accent);
+  }
+  .book-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 1rem;
+    color: var(--dim);
+    margin-top: 0.5rem;
+  }
+
+  /* ── TLDR BOX ── */
+  .tldr {
+    background: var(--accent);
+    color: #d4e8d8;
+    border-radius: 2px;
+    padding: 1.4rem 1.8rem;
+    margin-bottom: 3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+  }
+  .tldr-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--code-key);
+    margin-bottom: 0.5rem;
+  }
+  .tldr li { list-style: none; padding-left: 1.2em; position: relative; }
+  .tldr li::before { content: "→"; position: absolute; left: 0; color: var(--code-key); }
+
+  /* ── CHAPTER ── */
+  .chapter {
+    margin-bottom: 4rem;
+  }
+  .chapter-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--highlight);
+    margin-bottom: 0.3rem;
+  }
+  .chapter-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.2rem;
+  }
+  p {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* ── ASCII SKETCH ── */
+  .sketch {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    padding: 1.6rem 2rem;
+    border-radius: 2px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    white-space: pre;
+  }
+  .sketch .c  { color: var(--code-dim); }      /* comment/dim */
+  .sketch .k  { color: var(--code-key); }      /* key/green */
+  .sketch .v  { color: var(--code-val); }      /* value/amber */
+  .sketch .h  { color: #a8d8ea; }              /* highlight/blue */
+  .sketch .r  { color: #e8a0a0; }              /* red/warning */
+
+  /* ── LABEL ROWS ── */
+  .label-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin: 1rem 0 0.5rem;
+  }
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.2em 0.7em;
+    border-radius: 2px;
+    background: var(--warm);
+    color: var(--dim);
+    border: 1px solid var(--rule);
+  }
+  .label.green { background: #1e3028; color: var(--code-key); border-color: #2e5040; }
+  .label.amber { background: #2e2010; color: var(--code-val); border-color: #4e3820; }
+  .label.blue  { background: #102030; color: #a8d8ea; border-color: #204050; }
+
+  /* ── RULE ── */
+  hr {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 2.5rem 0;
+  }
+
+  /* ── SECTION HEADING ── */
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: var(--accent);
+    margin: 1.8rem 0 0.6rem;
+  }
+
+  /* ── HIGHLIGHT QUOTE ── */
+  .callout {
+    border-left: 3px solid var(--highlight);
+    padding: 0.6rem 1.2rem;
+    margin: 1.5rem 0;
+    color: var(--dim);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--rule);
+    letter-spacing: 0.1em;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* ── PAGE DIVIDER ── */
+  .page-break {
+    text-align: center;
+    margin: 3rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--rule);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════ HEADER -->
+<header class="book-header">
+  <div class="book-series">Systems Compendium · Volume I</div>
+  <h1 class="book-title">Anatomy of<br>a Program</h1>
+  <p class="book-subtitle">From bytes on disk to pixels on screen — a complete field guide.</p>
+</header>
+
+<!-- ══════════════════════════════════════════════ TLDR -->
+<div class="tldr">
+  <div class="tldr-label">tl;dr</div>
+  <ul>
+    <li>A program is a file of machine instructions stored on disk in a filesystem.</li>
+    <li>The OS loader reads it, maps it into RAM, and sets up memory segments.</li>
+    <li>The CPU fetches, decodes, and executes instructions one cycle at a time.</li>
+    <li>The OS mediates every resource: RAM, disk, network, GPU, screen.</li>
+    <li>The GUI is drawn by a render pipeline: layout → paint → composite → display.</li>
+    <li>Every layer below is invisible to the user; every layer above depends on it.</li>
+  </ul>
+</div>
+
+
+<!-- ══════════════════════════════════════════════ CH 1 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 01</div>
+  <h2 class="chapter-title">The File on Disk</h2>
+
+  <p>Before a program runs it is simply a file — a sequence of bytes stored somewhere in a filesystem tree. On Linux/macOS that tree begins at <code>/</code>; on Windows, at a drive letter. The file is usually an <strong>executable binary</strong> in a standardized format the OS understands.</p>
+
+  <div class="sketch"><span class="k">FILESYSTEM TREE</span>                         <span class="c">// where it lives</span>
+
+<span class="c">  /                              ← root of everything
+  ├── usr/
+  │   └── bin/
+  │       └── </span><span class="v">firefox</span>             <span class="c">← the executable binary</span>
+<span class="c">  ├── etc/                       ← system config
+  ├── home/
+  │   └── gotti/
+  │       ├── .config/firefox/   ← user profile data
+  │       └── Downloads/
+  └── tmp/                       ← ephemeral runtime files</span>
+
+  <span class="h">Permissions</span><span class="c">: -rwxr-xr-x  (owner can read/write/execute)</span>
+  <span class="h">Inode     </span><span class="c">: 2048301  (pointer into filesystem metadata table)</span>
+  <span class="h">Size      </span><span class="c">: 214 MB   (stored across many 4 KB disk blocks)</span></div>
+
+  <div class="label-row">
+    <span class="label">ELF (Linux)</span>
+    <span class="label">Mach-O (macOS)</span>
+    <span class="label">PE/COFF (Windows)</span>
+    <span class="label green">Each is a standard container format</span>
+  </div>
+
+  <h3>Inside the binary container</h3>
+  <p>The executable file is not a plain list of instructions. It is a <em>structured container</em> with a header that tells the OS how to load it.</p>
+
+  <div class="sketch"><span class="k">ELF BINARY LAYOUT</span>                      <span class="c">// e.g. /usr/bin/firefox on Linux</span>
+
+  <span class="c">┌─────────────────────────────────────────────┐
+  │  </span><span class="h">ELF Header</span><span class="c">  (64 bytes)                  │
+  │  Magic: 7f 45 4c 46  ("ELF")               │
+  │  Architecture: x86-64                       │
+  │  Entry point: 0x004010a0  ← first instr     │
+  │  Program header table offset                │
+  ├─────────────────────────────────────────────┤
+  │  </span><span class="k">.text</span><span class="c">   segment  ← compiled machine code    │
+  │  </span><span class="k">.rodata</span><span class="c"> segment  ← read-only strings/consts│
+  │  </span><span class="v">.data</span><span class="c">   segment  ← initialized variables    │
+  │  </span><span class="v">.bss</span><span class="c">    segment  ← zero-init global vars   │
+  │  </span><span class="r">.plt/.got</span><span class="c">        ← dynamic linking tables   │
+  ├─────────────────────────────────────────────┤
+  │  Section header table (for debuggers)       │
+  └─────────────────────────────────────────────┘</span></div>
+
+  <div class="callout">The magic bytes <code>7f 45 4c 46</code> at byte 0 of every ELF file literally spell "ELF" in ASCII. The OS checks this signature before it trusts any other byte in the file.</div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ CH 2 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 02</div>
+  <h2 class="chapter-title">Double-Click → The Loader</h2>
+
+  <p>When you launch a program, the OS does not just "run the file." It goes through a precise sequence: the <strong>kernel loader</strong> reads the binary, allocates memory, resolves library symbols, then hands control to the program's entry point.</p>
+
+  <div class="sketch"><span class="k">LAUNCH SEQUENCE</span>
+
+  <span class="c"> User           Shell / Finder       Kernel            CPU
+   │                    │                  │                 │
+   │── double-click ───▶│                  │                 │
+   │                    │── execve() ─────▶│                 │
+   │                    │               reads ELF header     │
+   │                    │               maps .text → RAM     │
+   │                    │               maps .data → RAM     │
+   │                    │               loads shared libs    │
+   │                    │               (ld.so / dyld)       │
+   │                    │               resolves symbols     │
+   │                    │               sets up stack        │
+   │                    │               sets up heap         │
+   │                    │───── jump to entry_point() ───────▶│
+   │                    │                  │            executes!</span></div>
+
+  <h3>Virtual Memory — the great illusion</h3>
+  <p>Every process believes it owns the entire address space (e.g., 0x0000 → 0x7fff…ffff on 64-bit). The MMU hardware and OS kernel silently translate these <em>virtual addresses</em> to real physical RAM, page by page.</p>
+
+  <div class="sketch"><span class="k">PROCESS VIRTUAL ADDRESS SPACE</span>           <span class="c">// 64-bit Linux</span>
+
+  <span class="c"> 0xFFFFFFFF FFFFFFFF ┌──────────────────────┐
+                      │  </span><span class="r">kernel space</span><span class="c">          │ ← off-limits to user code
+  0x0000 7FFF FFFFFFFF ├──────────────────────┤
+                      │  </span><span class="k">stack</span><span class="c">                 │ ← grows ↓  (local vars, call frames)
+                      │       ↓              │
+                      │         (unmapped)   │
+                      │       ↑              │
+                      │  </span><span class="v">heap</span><span class="c">                  │ ← grows ↑  (malloc / new)
+                      ├──────────────────────┤
+                      │  shared libs         │ ← libc, libGL, etc.
+                      ├──────────────────────┤
+                      │  </span><span class="v">.bss  / .data</span><span class="c">        │ ← globals
+                      │  </span><span class="k">.text</span><span class="c">                 │ ← your code
+  0x0000000000400000  └──────────────────────┘</span></div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ CH 3 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 03</div>
+  <h2 class="chapter-title">The CPU Executes</h2>
+
+  <p>The CPU runs a tight loop forever: <strong>Fetch → Decode → Execute → Writeback</strong>. Each instruction is typically 1–15 bytes of machine code that performs one atomic operation.</p>
+
+  <div class="sketch"><span class="k">THE FETCH–DECODE–EXECUTE CYCLE</span>
+
+  <span class="c">              ┌───────────────────────────────────────┐
+              │               CPU                         │
+              │   ┌─────────┐   ┌─────────┐              │
+              │   │  Fetch  │──▶│ Decode  │              │
+              │   └────▲────┘   └────┬────┘              │
+              │        │             ▼                    │
+              │   ┌────┴──────┐ ┌─────────┐              │
+              │   │    PC     │ │ Execute │              │
+              │   │(prog ctr) │ └────┬────┘              │
+              │   └───────────┘      │                    │
+              │                      ▼                    │
+              │               ┌──────────────┐           │
+              │               │  Registers   │  ← fast!  │
+              │               │  rax rbx rcx │           │
+              │               │  rsp rbp rip │           │
+              │               └──────┬───────┘           │
+              └──────────────────────┼───────────────────┘
+                                     │ (cache miss → RAM)
+                         ┌───────────▼───────────────┐
+                         │  L1 cache (4 cycles)       │
+                         │  L2 cache (12 cycles)      │
+                         │  L3 cache (40 cycles)      │
+                         │  RAM      (200+ cycles)    │
+                         └────────────────────────────┘</span></div>
+
+  <h3>Syscalls — asking the kernel for help</h3>
+  <p>User code cannot directly touch hardware. Every time a program reads a file, allocates memory, or draws to the screen, it triggers a <strong>syscall</strong> — a trap into kernel mode that the OS handles, then returns a result.</p>
+
+  <div class="sketch"><span class="k">PRIVILEGE RINGS</span>
+
+  <span class="c">   ╔═══════════════════════════════════╗
+   ║         Ring 0  — KERNEL           ║  ← direct hardware access
+   ║   ┌───────────────────────────┐   ║
+   ║   │     Ring 3  — USER        │   ║  ← your program lives here
+   ║   │                           │   ║
+   ║   │   open()  ─────syscall──▶ ║───╬──▶ kernel handles it
+   ║   │   read()  ─────syscall──▶ ║   ║     then returns
+   ║   │   mmap()  ─────syscall──▶ ║   ║
+   ║   │   write() ─────syscall──▶ ║   ║
+   ║   └───────────────────────────┘   ║
+   ╚═══════════════════════════════════╝</span>
+
+  <span class="c"> ~400 syscalls exist on Linux. A typical program uses ~30 of them.</span></div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ CH 4 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 04</div>
+  <h2 class="chapter-title">Shared Libraries & Linking</h2>
+
+  <p>Programs don't ship every function they use. They <em>link</em> to shared libraries (`.so` / `.dylib` / `.dll`) that are loaded once into RAM and shared across all processes that need them.</p>
+
+  <div class="sketch"><span class="k">DYNAMIC LINKING MAP</span>
+
+  <span class="c">  firefox (process)
+  ├── </span><span class="k">libxul.so</span><span class="c">         ← gecko engine (90 MB)
+  ├── </span><span class="k">libc.so.6</span><span class="c">         ← C standard library (malloc, fopen…)
+  ├── </span><span class="k">libGL.so</span><span class="c">          ← OpenGL / GPU abstraction
+  ├── </span><span class="k">libX11.so</span><span class="c">         ← Xorg display protocol (or Wayland)
+  ├── </span><span class="k">libpthread.so</span><span class="c">     ← POSIX threads
+  └── </span><span class="k">libssl.so</span><span class="c">         ← TLS/HTTPS
+
+  All loaded by </span><span class="v">ld.so</span><span class="c"> (the dynamic linker) at startup.
+  Physical RAM page for libc.so is shared — only ONE copy in RAM
+  even if 50 processes use it.</span>
+
+       <span class="h">Process A</span><span class="c">          </span><span class="h">Process B</span><span class="c">          </span><span class="h">Process C</span>
+  <span class="c">     │                  │                  │
+     │  virtual addr     │  virtual addr     │  virtual addr
+     │  0x7f3a000        │  0x7f8b000        │  0x7f12000
+     │        \          │       |           │       /
+     │         ╚═════════╩═══════╩═══════════╝
+     │                   │
+     │              </span><span class="k">ONE physical page</span><span class="c"> of libc in RAM</span></div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ CH 5 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 05</div>
+  <h2 class="chapter-title">The GUI Render Pipeline</h2>
+
+  <p>Once the program logic runs, it needs to put pixels on screen. The modern render pipeline is a layered stack that goes from abstract UI descriptions all the way down to the display controller clocking out voltages to individual pixels.</p>
+
+  <div class="sketch"><span class="k">THE FULL GUI STACK</span>                         <span class="c">// top → bottom</span>
+
+  <span class="c"> ┌──────────────────────────────────────────────┐
+  │  </span><span class="h">Application</span><span class="c">                                  │
+  │  "Draw a button at x=100, y=200, w=80, h=30" │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  </span><span class="k">UI Toolkit</span><span class="c">  (Qt / Cocoa / Electron / GTK)     │
+  │  Builds a widget tree, handles events         │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  </span><span class="v">Layout Engine</span><span class="c">                                │
+  │  Computes geometry: where does each box go?   │
+  │  Flex, grid, constraints…                     │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  </span><span class="v">Paint / Rasterize</span><span class="c">                            │
+  │  Converts shapes, text, images to pixel grids │
+  │  (Skia, Core Graphics, Cairo…)               │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  </span><span class="k">Compositor</span><span class="c">  (DWM / Quartz Compositor / Mutter)│
+  │  Merges all app layers + OS chrome           │
+  │  Uploads final texture to GPU VRAM           │
+  └──────────────────┬───────────────────────────┘
+                     ▼
+  ┌──────────────────────────────────────────────┐
+  │  </span><span class="r">GPU → Display Controller → Monitor</span><span class="c">          │
+  │  VRAM framebuffer clocked out at 60/120 Hz   │
+  └──────────────────────────────────────────────┘</span></div>
+
+  <h3>The render tree in detail</h3>
+
+  <div class="sketch"><span class="k">FROM WIDGET TREE → PIXELS</span>
+
+  <span class="c"> Widget Tree (app's model)          Display List (paint ops)
+  ┌──────────────┐                  ┌──────────────────────────┐
+  │   Window     │                  │  fillRect(0,0,1280,800   │
+  │   ├── Toolbar│─────────────────▶│    #1a3a2a)              │
+  │   │   ├── Btn│                  │  drawText("File", 12,16, │
+  │   │   └── Btn│                  │    Inter 14px #ffffff)   │
+  │   └── Canvas │                  │  drawImage(icon, 44,8,…) │
+  └──────────────┘                  └────────────┬─────────────┘
+                                                  │
+                                    GPU rasterizes▼
+                                  ┌──────────────────────────┐
+                                  │  ████████████████████    │
+                                  │  █ File  Edit  View █    │
+                                  │  ████████████████████    │
+                                  │        … pixels …        │
+                                  └──────────────────────────┘</span></div>
+
+  <h3>VSync & the frame budget</h3>
+  <p>At 60 Hz the display refreshes every <strong>16.6 ms</strong>. Everything — layout, paint, composite, GPU upload — must finish inside that window or the frame is "dropped" and the user sees a stutter.</p>
+
+  <div class="sketch"><span class="k">FRAME TIMELINE  (16.6 ms budget)</span>
+
+  <span class="c"> 0ms          5ms         10ms        15ms  16.6ms
+  │────────────│───────────│───────────│──────│
+  ├──</span><span class="k">JS/Logic</span><span class="c">─────┤</span><span class="v">Layout</span><span class="c">───┤</span><span class="k">Paint</span><span class="c">────┤</span><span class="h">GPU</span><span class="c">──┤ ✓ on time
+
+  </span><span class="c"> 0ms          5ms         10ms        15ms  16.6ms  20ms
+  │────────────│───────────│───────────│──────│───────│
+  ├──</span><span class="k">JS/Logic</span><span class="c">──────────────────────────────────┤</span><span class="r">JANK</span><span class="c">  ✗ dropped</span></div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ CH 6 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 06</div>
+  <h2 class="chapter-title">The Full Stack, End to End</h2>
+
+  <p>Every layer we've examined fits together into one coherent picture. From the inode on disk to a photon leaving the monitor, here is the complete path:</p>
+
+  <div class="sketch"><span class="k">COMPLETE ANATOMY — ONE DIAGRAM</span>
+
+<span class="c">  ╔══════════════════════════════════════════════════════════╗
+  ║  </span><span class="r">STORAGE</span><span class="c">                                                  ║
+  ║  NVMe SSD  →  filesystem (ext4 / APFS / NTFS)            ║
+  ║  inode  →  data blocks  →  ELF/Mach-O/PE binary          ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  </span><span class="v">OS LOADER</span><span class="c">                                                ║
+  ║  kernel reads binary  →  parses segments                 ║
+  ║  mmap() .text .data .bss  →  virtual address space       ║
+  ║  ld.so resolves shared libs  →  sets up stack/heap       ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  </span><span class="h">PROCESS IN RAM</span><span class="c">                                           ║
+  ║  │ kernel space  │ stack  │ heap │ libs │ .text │ .data │ ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  </span><span class="k">CPU EXECUTION</span><span class="c">                                            ║
+  ║  fetch → decode → execute → writeback  (billions/sec)    ║
+  ║  syscalls cross to Ring 0 for I/O, memory, network       ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  </span><span class="v">GUI SUBSYSTEM</span><span class="c">                                            ║
+  ║  widget tree → layout → paint (Skia) → compositor        ║
+  ║  texture upload via DRM/KMS or Metal / DirectX           ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  </span><span class="r">GPU</span><span class="c">                                                      ║
+  ║  vertex shader → rasterize → fragment shader → VRAM      ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║  </span><span class="h">DISPLAY</span><span class="c">                                                  ║
+  ║  display controller scans framebuffer at 60–240 Hz       ║
+  ║  HDMI/DP signal  →  panel row/column drivers  →  photons ║
+  ╚══════════════════════════════════════════════════════════╝</span></div>
+
+  <div class="callout">"The most sophisticated thing your computer does every second is make all of that invisible." — the whole point of an operating system is to be the layer nobody thinks about.</div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════ CH 7 -->
+<section class="chapter">
+  <div class="chapter-number">Chapter 07</div>
+  <h2 class="chapter-title">What a File "Does" When It Loads</h2>
+
+  <p>Different types of files serve different roles at load time. Here is a quick taxonomy of what each actually <em>does</em> to the process that loads it.</p>
+
+  <div class="sketch"><span class="k">FILE TYPE ROLES AT LOAD TIME</span>
+
+  <span class="h">Type          Loaded by        What it contributes</span>
+  <span class="c">──────────────────────────────────────────────────────────
+  </span><span class="k">.so / .dll  </span><span class="c">  ld.so / LoadLib  code + data mapped into proc space
+  </span><span class="k">.json       </span><span class="c">  app runtime      config tree parsed into heap structs
+  </span><span class="k">.png / .jpg </span><span class="c">  image decoder    decoded pixel buffer → GPU texture
+  </span><span class="k">.ttf / .otf </span><span class="c">  font engine      glyph outlines → rasterized atlas
+  </span><span class="k">.glsl / .msl</span><span class="c">  GPU driver       compiled to ISA, uploaded to GPU
+  </span><span class="k">.html / .css</span><span class="c">  browser engine   DOM tree + CSSOM → render tree
+  </span><span class="k">.wasm       </span><span class="c">  JS engine        near-native bytecode in sandboxed heap
+  </span><span class="k">.db / .sqlite</span><span class="c"> db engine        B-tree pages mmap'd into proc space</span>
+
+  <span class="c">Every load operation follows the same skeleton:
+    1. open() the file  →  get a file descriptor
+    2. read() or mmap() bytes into address space
+    3. parse / validate the format
+    4. build an in-memory data structure the app can use
+    5. close() the fd   →  data stays live in RAM</span></div>
+</section>
+
+
+<div class="page-break">· · · · · · · · · · · · · · · · · · · · · · · · ·</div>
+
+<footer class="footer">
+  <span>Anatomy of a Program — Systems Compendium Vol. I</span>
+  <span>x86-64 / Linux / macOS reference edition</span>
+</footer>
+
+</body>
+</html>
