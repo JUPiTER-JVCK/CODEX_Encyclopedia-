@@ -90,6 +90,7 @@ enum CodexTree {
         "Codex_macOS",
         "Codex_LMS",
         "Codex.app",
+        "tools",
         "node_modules",
         "dist",
         ".build",

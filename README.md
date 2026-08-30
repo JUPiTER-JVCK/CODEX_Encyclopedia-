@@ -1,162 +1,198 @@
-# Codex v3 — Computing Stack Knowledge Base
+# CODEX Encyclopedia
 
-> A layered reference codex covering the full stack from **physics** to
+> A layered reference covering the full computing stack from **physics** to
 > **applications**, plus cross-cutting domains (Security, AI/ML, RF,
-> Algorithms, Embedded Systems, Industrial Protocols). Each layer documents
-> what it does, the languages used, the medium/interface, example
-> communication, and links out to references, lessons, language lookups,
-> manual pages, topics, and protocols.
+> Algorithms, Embedded Systems, Industrial Protocols) — and two apps for
+> reading and learning it.
 
-**Current version:** 3.0 (Top-to-bottom SwiftUI redesign — translucent vibrancy sidebar, modern toolbar with breadcrumb & navigation history, Safari-style tabs, three-tab right inspector, Welcome screen with quick-action cards, clickable cross-document links, modern markdown rendering with hover-copy code blocks)
-**See:** [CHANGELOG.md](CHANGELOG.md)
+**Version 3.1** · see [CHANGELOG.md](CHANGELOG.md)
 
-## Layout
+## What's in here
+
+Three components, each usable on its own:
+
+| Component | What it is | Language |
+|-----------|-----------|----------|
+| **The codex** | 266 markdown notes across 23 layer folders — the reference itself | Markdown |
+| **[`Codex_macOS/`](Codex_macOS/README.md)** | Native macOS reader for the codex | SwiftUI |
+| **[`Codex_LMS/`](Codex_LMS/README.md)** | CORE — a seven-phase interactive curriculum | React + Vite |
+
+The codex is a **reference**, organized by where a thing sits in the stack.
+CORE is a **course**, organized by the order you'd learn things in. They
+overlap in subject matter and are deliberately separate in structure.
+
+## The layer model
+
+23 layers in four bands. [LAYERS.md](LAYERS.md) has the full table with
+languages, interfaces, and example flows per layer.
 
 ```
-Codex_v2/
-├── README.md            ← this index
-├── LAYERS.md            ← master table (extended from computer_layers.pdf)
-├── STRUCTURE.md         ← conventions: file naming, frontmatter, cross-links
-├── CHANGELOG.md         ← v1 → v2 → v2.1 migration notes
-├── _assets/             ← reference images (see _assets/README.md)
-│
-├── 00_Physics/             ─┐
-├── 00b_Devices/             │  Physical foundations
-├── 00c_Analog_Circuits/     │  (new in v2.1)
-├── 00d_Digital_Circuits/   ─┘
-│
-├── 01_Circuit_Board/       ─┐
-├── 02_CPU/                  │
-├── 03_Firmware_BIOS/        │  Compute stack
-├── 04_Device_Drivers/       │  (from computer_layers.pdf)
-├── 05_OS_Kernel/            │
-├── 06_System_Libraries/     │
-├── 07_Runtime_Environment/  │
-├── 08_User_Applications/   ─┘
-│
-├── Network/                ─┐  Network stack
-│   ├── 09_Network_Physical/ │  (OSI-aligned)
-│   ├── 10_Network_DataLink/ │  *banded under Network/ since v2.2*
-│   ├── 11_Network_Internet/ │
-│   ├── 12_Network_Transport/│
-│   └── 13_Network_Application/┘
-│
-├── 14_Security/            ─┐
-├── 15_AI_ML/                │  Cross-cutting
-├── 16_RF_Wireless/          │  (14–16 from v2.0)
-├── 17_Algorithms_DSA/       │  (17–19 new in v2.1)
-├── 18_Embedded_Systems/     │
-└── 19_Industrial_Protocols/─┘
+                                          ┌─ 14 Security
+ 08 User Applications ◄──── 17 Algorithms │  15 AI / ML
+ 07 Runtime Environment                   │  16 RF / Wireless
+ 06 System Libraries                      │  18 Embedded Systems
+ 05 OS Kernel ◄──────── 13 Network App    │  19 Industrial Protocols
+ 04 Device Drivers      12 Transport      └─ (cross-cutting: they
+ 03 Firmware / BIOS     11 Internet          intersect the stack at
+ 02 CPU                 10 Data Link         many points at once)
+ 01 Circuit Board ───── 09 Physical
+ 00d Digital Circuits
+ 00c Analog Circuits
+ 00b Devices
+ 00 Physics
 ```
 
-Every layer folder contains the same six sub-sections:
+Every layer folder holds the same six sub-sections:
 
-| Sub-section    | What lives here                                                         |
-|----------------|-------------------------------------------------------------------------|
-| `references/`  | Books, papers, datasheets, links, vendor docs                           |
-| `lessons/`     | Tutorials, walkthroughs, exercises, lab notes                           |
-| `languages/`   | Programming/markup/HDL languages used at this layer with a lookup table |
-| `man_pages/`   | CLI tools, system utilities, manual page references                     |
-| `topics/`      | Concept notes — the "what is this and why" entries                      |
-| `protocols/`   | Protocols, specs, standards, RFCs that apply at this layer              |
+| Sub-section | What lives here |
+|-------------|-----------------|
+| `references/` | Books, papers, datasheets, vendor docs |
+| `lessons/` | Tutorials, walkthroughs, lab notes |
+| `languages/` | Languages used at this layer, with a lookup table |
+| `man_pages/` | CLI tools and system utilities |
+| `topics/` | Concept notes — the "what is this and why" entries |
+| `protocols/` | Protocols, specs, standards, RFCs |
 
-## Anchor materials (in-codex)
+Each has an `INDEX.md` as its entry point. Start at
+[LAYERS.md](LAYERS.md) for the map, then drill into any layer's `README.md`.
 
-- `17_Algorithms_DSA/references/100_leetcode_problems.pdf` — user-supplied LeetCode list
-- `18_Embedded_Systems/references/embedded_systems_full_roadmap_book.pdf` — Embedded Systems Engineering Roadmap (from v1 `~/Documents/Information_Tech/- Hardware/`)
-- `00d_Digital_Circuits/topics/logic_gates.md` — recreated truth-table reference from the logic-gates image
-- `01_Circuit_Board/protocols/embedded_bus_protocols_lookup.md` — DSLogic/sigrok decoder catalog
+## Running the macOS reader
 
-## How to use
-
-1. Start at [LAYERS.md](LAYERS.md) for the high-level map.
-2. Drill into a layer's `README.md` for description, languages, and example flow.
-3. Use the sub-section folders for depth — each one has an `INDEX.md`.
-4. Cross-references between layers use relative links like `../05_OS_Kernel/topics/syscalls.md`.
-
-## Running the TUI
+Requires macOS 13+ and the Xcode command-line tools.
 
 ```sh
-pip3 install --user -r Codex_v2/requirements.txt
-./Codex_v2/codex
-```
-
-Opens a multi-pane terminal browser:
-- **Breadcrumb header** showing the current selection path
-- **Sidebar tree** grouped by band (Foundations / Compute / Network / Cross-cutting)
-  with a `★/·` bookmark gutter
-- **Tabbed markdown viewer** (`n` opens current selection in a new tab; `ctrl+w` closes)
-- **Outline TOC** of the current file's headings
-- **Status bar** with path, size, last-modified
-- Full-text **search** (`/` — prefix `r:` for regex)
-- **Command palette** (`ctrl+P`) — fuzzy file picker over all docs
-- **Bookmarks + recents** persisted to `~/.config/codex_tui/state.json`
-- **Click-to-follow** relative `.md` links (open in new tab)
-- **Split-pane viewer** (`ctrl+\` toggles side-by-side panes)
-- **Theme switcher** (`ctrl+T` cycles Mocha / Latte / high-contrast)
-- Press `?` for the full keybinding reference
-
-Run `python3 -m codex_tui` if you prefer module invocation.
-
-### Native macOS app (SwiftUI)
-
-A real macOS **`Codex.app`** ships in the project root — pure SwiftUI,
-no Terminal, no Python at runtime. Double-clickable from Finder, the
-Dock, Launchpad, or Spotlight. Renders the same markdown tree directly
-on the GPU with the Catppuccin Mocha palette.
-
-```sh
-# One-time: accept the Xcode license and install CLI tools
+# One-time
 sudo xcodebuild -license accept
 xcode-select --install
 
-# Build & run (creates ./Codex.app and opens it)
+# Build and launch (produces ./Codex.app)
 ./Codex_macOS/package_app.sh --run
-
-# Other modes
-./Codex_macOS/package_app.sh             # build only, no auto-open
-./Codex_macOS/package_app.sh --debug     # faster debug build
-./Codex_macOS/package_app.sh --install   # also copy to /Applications
-./Codex_macOS/package_app.sh --icon      # regenerate the AppIcon.icns
 ```
 
-Features in the SwiftUI app:
+Other modes: `--debug` (faster build), `--install` (also copy to
+`/Applications`), `--icon` (regenerate the AppIcon), or no flag to build
+without launching.
 
-- 3-column NavigationSplitView (sidebar tree · tabbed viewer · outline TOC)
-- Custom block-level Markdown renderer (headings, fenced code with
-  language tag, lists, pipe tables, blockquotes, rules, inline styling)
-- `⌘P` command palette with fuzzy file matching across all docs
-- Tabbed viewer with hover-close; `⌘W` closes the active tab
-- Status bar with relative path, byte size, and keybinding hints
-- Bookmarks + recents persisted to
-  `~/Library/Application Support/Codex/state.json`
+The app finds the codex by checking, in order: the `$CODEX_ROOT` environment
+variable, the `project_path` resource recorded in the bundle at build time,
+a walk up from the executable looking for `README.md` + `STRUCTURE.md`, then
+the working directory. So the `.app` keeps working after you move it.
 
-Bundle layout:
+Full feature list and source layout: [`Codex_macOS/README.md`](Codex_macOS/README.md).
 
-```
-Codex.app/
-└── Contents/
-    ├── Info.plist          ← CFBundle metadata (id: local.codex.swift, v2.6)
-    ├── MacOS/Codex         ← Mach-O SwiftUI executable
-    └── Resources/
-        ├── AppIcon.icns    ← Catppuccin "C" icon (1024px @1x/@2x)
-        └── project_path    ← absolute Codex_v2 path for portable launch
+## Running CORE
+
+Requires Node 18+.
+
+```sh
+cd Codex_LMS
+npm install
+npm run dev
 ```
 
-Source lives in [`Codex_macOS/`](Codex_macOS/README.md) — seven Swift
-files (~750 lines), one SwiftPM `Package.swift`, one build script.
+Seven phases, 43 topics, 222 chapters, with interactive simulators (logic
+gates, subnet calculator, CPU cycle stepper, chmod calculator, and more), a
+glossary, a live code playground, and spaced review. Progress persists to
+`localStorage`.
 
-Project-root discovery order: `$CODEX_ROOT` env var → bundled
-`project_path` resource → walk up from the executable looking for
-`README.md` + `STRUCTURE.md` → cwd. So the `.app` keeps working after
-being moved to `/Applications`.
+Details: [`Codex_LMS/README.md`](Codex_LMS/README.md).
+
+## Repository layout
+
+```
+CODEX_Encyclopedia-/
+├── README.md              ← this file
+├── LAYERS.md              ← master layer table
+├── STRUCTURE.md           ← conventions: naming, frontmatter, cross-links
+├── CHANGELOG.md           ← version history
+├── _assets/               ← reference images
+│
+├── 00_Physics/            ─┐
+├── 00b_Devices/            │  Foundations
+├── 00c_Analog_Circuits/    │
+├── 00d_Digital_Circuits/  ─┘
+│
+├── 01_Circuit_Board/      ─┐
+├── 02_CPU/                 │
+├── 03_Firmware_BIOS/       │
+├── 04_Device_Drivers/      │  Compute stack
+├── 05_OS_Kernel/           │
+├── 06_System_Libraries/    │
+├── 07_Runtime_Environment/ │
+├── 08_User_Applications/  ─┘
+│
+├── Network/               ─┐
+│   ├── 09_Network_Physical/│
+│   ├── 10_Network_DataLink/│  Network stack (OSI-aligned)
+│   ├── 11_Network_Internet/│
+│   ├── 12_Network_Transport/
+│   └── 13_Network_Application/
+│                          ─┘
+├── 14_Security/           ─┐
+├── 15_AI_ML/               │
+├── 16_RF_Wireless/         │  Cross-cutting
+├── 17_Algorithms_DSA/      │
+├── 18_Embedded_Systems/    │
+├── 19_Industrial_Protocols/
+│                          ─┘
+├── Codex_macOS/            ← SwiftUI reader source
+├── Codex_LMS/              ← React curriculum source
+└── tools/                  ← maintenance scripts (link audit)
+```
+
+Anything added at the root that isn't a layer must also be registered in
+`CodexTree.nonContentDirs`, or the macOS app treats it as one. See
+[STRUCTURE.md](STRUCTURE.md#repository-layout).
+
+## Anchor materials
+
+- `17_Algorithms_DSA/references/100_leetcode_problems.pdf` — the source for
+  [`topics/100_must_do.md`](17_Algorithms_DSA/topics/100_must_do.md)
+- `18_Embedded_Systems/references/embedded_systems_full_roadmap_book.pdf` —
+  see *Known gaps* below
+- `00d_Digital_Circuits/topics/logic_gates.md` — full truth-table reference
+- `01_Circuit_Board/protocols/embedded_bus_protocols_lookup.md` — the
+  DSLogic/sigrok decoder catalog, ~150 decoders mapped to owning layers
 
 ## Conventions
 
-See [STRUCTURE.md](STRUCTURE.md). TL;DR:
+See [STRUCTURE.md](STRUCTURE.md). In brief:
 
-- Markdown only (`.md`), UTF-8, LF line endings.
-- Filenames: `lowercase_with_underscores.md`.
-- Each note starts with YAML frontmatter (`title`, `layer`, `tags`, `updated`).
-- Prefer linking over duplicating — protocols live in their layer's `protocols/`.
-- Images live in `_assets/`; reference with relative paths.
+- Markdown only, UTF-8, LF endings
+- `lowercase_with_underscores.md` filenames; layer folders keep their numeric prefix
+- Every note opens with YAML frontmatter (`title`, `layer`, `section`, `tags`, `updated`)
+- Link rather than duplicate — each protocol lives in the layer that owns it on the wire
+- Images live in `_assets/`, referenced relatively
+
+## Known gaps
+
+Honest inventory of what isn't here yet:
+
+- **The Python TUI is not in this repository.** `requirements.txt` remains at
+  the root and older changelog entries describe a Textual-based browser, but
+  no `codex_tui/` source is present. Use the macOS app, or any markdown
+  reader, until it lands.
+- **The four reference images are missing** from `_assets/` — see
+  [`_assets/README.md`](_assets/README.md) for the expected filenames. Every
+  image has a markdown text equivalent, so nothing is lost but the pictures.
+  No note actually embeds one today, which is why the tree audits clean.
+- **`embedded_systems_full_roadmap_book.pdf` is a placeholder** — an 8 KB,
+  10-page generated stub, not Parvizi's actual roadmap book. The real source
+  is [github.com/m3y54m/Embedded-Engineering-Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap)
+  (CC BY-SA 4.0).
+- **The macOS app has known performance issues** in its markdown pipeline —
+  documented in [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues).
+
+## Verification
+
+```sh
+python3 tools/link_audit.py
+```
+
+Resolves every relative link against the file containing it, skipping code
+spans so syntax examples aren't counted, and exits non-zero on a breakage —
+so it works as a CI gate. Currently:
+
+- 274 markdown files
+- 1006 internal links, 0 broken
+- Every file carries an H1

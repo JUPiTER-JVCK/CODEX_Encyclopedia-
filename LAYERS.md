@@ -1,16 +1,17 @@
 # LAYERS — Master Table
 
-> **v2.1** extends the original PDF model with finer-grained foundational
-> layers (00 series) and three new cross-cutting bands (17–19) covering
-> algorithms, embedded systems, and industrial protocols.
+> The master map: 23 layers in four bands. The model started as an
+> eight-layer compute ladder and was extended with finer-grained
+> foundational layers (the 00 series) and six cross-cutting domains
+> (14–19) that intersect the stack rather than sitting on it.
 >
-> Original PDF: `~/Documents/Information_Tech/- System/computer_layers.pdf`
-> Image references in [`_assets/`](_assets/).
+> Conventions in [STRUCTURE.md](STRUCTURE.md) · image manifest in
+> [`_assets/`](_assets/).
 
-## Physical Foundations (new in v2.1)
+## Physical Foundations
 
-Per the *"Application Software → ... → Devices → Physics"* ladder image,
-v2.1 adds the foundational layers beneath the original "Circuit Board" row:
+Per the *"Application Software → … → Devices → Physics"* ladder, these are
+the foundational layers beneath the original "Circuit Board" row:
 
 | # | Layer | Description | Languages | Medium / Interface | Example |
 |---|-------|-------------|-----------|--------------------|---------|
@@ -19,7 +20,7 @@ v2.1 adds the foundational layers beneath the original "Circuit Board" row:
 | 00c | [Analog Circuits](00c_Analog_Circuits/) | Continuous-valued circuits: amps, filters, ADC/DAC, regulators | SPICE, MATLAB, Verilog-AMS | V / I waveforms | Op-amp INA conditions a thermistor for ADC |
 | 00d | [Digital Circuits](00d_Digital_Circuits/) | Logic gates, flip-flops, ALUs, FSMs, RTL | Verilog, SystemVerilog, VHDL, Chisel | Boolean signals + clocks | 32-bit ALU executes ADD in 1 cycle |
 
-## Compute Stack (unchanged from v2.0)
+## Compute Stack
 
 | # | Layer | Description | Languages | Medium / Interface | Example Communication |
 |---|-------|-------------|-----------|--------------------|-----------------------|
@@ -34,8 +35,8 @@ v2.1 adds the foundational layers beneath the original "Circuit Board" row:
 
 ## Network Stack (OSI-aligned)
 
-> **v2.2 layout:** these five layers live inside `Codex_v2/Network/` as a
-> named band. The other 18 layers stay flat at the top level.
+> **Layout:** these five layers live inside [`Network/`](Network/) as a
+> named band. The other 18 layers sit flat at the repository root.
 
 | # | Layer | OSI | Description | Protocols | Example |
 |---|-------|-----|-------------|-----------|---------|
@@ -52,11 +53,11 @@ v2.1 adds the foundational layers beneath the original "Circuit Board" row:
 | 14 | [Security](14_Security/) | All layers | OSINT, pentesting, malware, crypto, IR, compliance |
 | 15 | [AI / ML](15_AI_ML/) | 07–08 (mostly) | Models, training, prompts, agents, tooling |
 | 16 | [RF / Wireless](16_RF_Wireless/) | 01, 09, 10 | RF fundamentals, SDR, Wi-Fi, Bluetooth, cellular |
-| **17** | **[Algorithms & DSA](17_Algorithms_DSA/)** *(new v2.1)* | 02 → 08, 15 | LeetCode-style patterns, complexity, interview prep |
-| **18** | **[Embedded Systems](18_Embedded_Systems/)** *(new v2.1)* | 00 → 13, 14, 16 | Roadmap-aligned (Parvizi v1.2.3): MCU, RTOS, build, debug, certs |
-| **19** | **[Industrial Protocols](19_Industrial_Protocols/)** *(new v2.1)* | 09 → 13 + OT/auto | Modbus, PROFINET, EtherCAT, BACnet, DALI, CAN, LIN, FlexRay, UDS, J1939 |
+| 17 | [Algorithms & DSA](17_Algorithms_DSA/) | 02 → 08, 15 | LeetCode-style patterns, complexity, interview prep |
+| 18 | [Embedded Systems](18_Embedded_Systems/) | 00 → 13, 14, 16 | Roadmap-aligned (Parvizi v1.2.3): MCU, RTOS, build, debug, certs |
+| 19 | [Industrial Protocols](19_Industrial_Protocols/) | 09 → 13 + OT/auto | Modbus, PROFINET, EtherCAT, BACnet, DALI, CAN, LIN, FlexRay, UDS, J1939 |
 
-## Full Layer Adjacencies (v2.1)
+## Full Layer Adjacencies
 
 ```
 USER WORLD
@@ -96,13 +97,20 @@ points listed in each layer's README.
 
 ## Source images (in `_assets/`)
 
-- `computer_layers_ladder.png` — the 9-layer ladder (drove the v2.1 expansion)
+- `computer_layers_ladder.png` — the 9-layer ladder that drove the 00-series expansion
 - `logic_gates_explained.png` — referenced from [00d/topics/logic_gates.md](00d_Digital_Circuits/topics/logic_gates.md)
 - `dslogic_decoder_list.png` — referenced from [01/protocols/embedded_bus_protocols_lookup.md](01_Circuit_Board/protocols/embedded_bus_protocols_lookup.md)
 - `embedded_systems_roadmap.png` — referenced from [18/README.md](18_Embedded_Systems/README.md)
 
+> **These four images are not yet in the repository.** Each has a markdown
+> text equivalent in the codex, so nothing is lost but the pictures. See
+> [`_assets/README.md`](_assets/README.md) for the expected filenames.
+
 ## Anchor PDFs
 
-- `17_Algorithms_DSA/references/100_leetcode_problems.pdf` — user-supplied list
-- `18_Embedded_Systems/references/embedded_systems_full_roadmap_book.pdf` — from v1
-- Original PDF: `~/Documents/Information_Tech/- System/computer_layers.pdf` (drove v2.0)
+- `17_Algorithms_DSA/references/100_leetcode_problems.pdf` — the source
+  behind [`topics/100_must_do.md`](17_Algorithms_DSA/topics/100_must_do.md)
+- `18_Embedded_Systems/references/embedded_systems_full_roadmap_book.pdf` —
+  currently a generated placeholder, not the real roadmap book. Original at
+  [github.com/m3y54m/Embedded-Engineering-Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap)
+  (Meysam Parvizi, CC BY-SA 4.0).

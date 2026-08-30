@@ -1,5 +1,99 @@
 # CHANGELOG
 
+## v3.1 — 2026-08-30
+
+Repository consolidation. The codex, the macOS reader, and a React
+curriculum that had been living apart now sit in one repository, and the
+top-level docs describe what is actually here.
+
+### Added — Codex LMS (CORE)
+
+A seven-phase interactive curriculum joins the repository at
+[`Codex_LMS/`](Codex_LMS/README.md): 43 topics, 222 chapters, from Boolean
+logic to ethical hacking, with simulators, a glossary, a live playground,
+and Leitner-box spaced review.
+
+It arrived as a bare `core-app.jsx` with no way to run it. Now it builds:
+
+- **Vite + React 18 harness** — `index.html` with font links and a pre-paint
+  background, `src/main.jsx` root, `vite.config.js` with a relative base so
+  the bundle works from a subdirectory, and a favicon
+- **`src/storage.js`** — a progress-persistence adapter. The app was written
+  against `window.storage`, the async bridge that only exists inside Claude
+  artifacts; outside it, both the read and the write threw into empty catch
+  blocks, so the app ran normally and silently discarded every bit of
+  progress. The adapter resolves a backend once — `window.storage` when
+  present, else `localStorage`, else an in-memory map for private mode and
+  sandboxed iframes — while keeping the original async call shape
+- **`test/smoke.mjs`** — drives Chromium from the master hub through a phase
+  to a topic, pages to the last chapter, marks it complete, and asserts the
+  stored value is byte-identical across a reload
+
+The eight pre-merge module sources are kept alongside as the only record of
+the structure before they were merged into one file. Nothing imports them.
+
+### Added — macOS reader
+
+- `CodexTree.nonContentDirs` collects the directories that are apps rather
+  than codex content — the sibling apps, `node_modules`, build output — and
+  both the sidebar tree and the palette index consult it. Without this,
+  adding `Codex_LMS/` surfaced it as a phantom layer and put 97 markdown
+  files, 95 of them vendored, into `⌘P`
+- `allFiles` calls `skipDescendants()` on a match, pruning an excluded
+  directory outright instead of walking and filtering it entry by entry
+
+### Changed — documentation
+
+Every top-level document described a `Codex_v2/` directory that does not
+exist here, and pointed at paths on one particular Mac.
+
+- **`README.md`** — rewritten around the three components actually present,
+  with correct build instructions for both apps and a *Known gaps* section
+  recording what is missing rather than implying it is present
+- **`STRUCTURE.md`** — repository layout section, the H1 requirement, the
+  rule that a new root directory must also be registered in
+  `nonContentDirs`, and a note on where app conventions take over
+- **`LAYERS.md`** — stale local paths and version annotations removed; the
+  missing images and the placeholder PDF now called out where they are listed
+- **`Codex_macOS/README.md`** — was still describing the pre-v3.0
+  three-column layout and a `Views.swift` that no longer exists. Rewritten
+  for the current architecture, with the full shortcut table and a
+  **Known issues** section recording an audit of the Swift sources
+- **`Codex_LMS/README.md`** — new; documents the storage backends and the
+  smoke test
+
+### Known issues recorded, not yet fixed
+
+An audit of the 13 Swift sources found the markdown pipeline re-parsing a
+document on the order of 400 times per render, a synchronous disk read
+inside `body`, and `displayTitle()` re-reading every open file per tab-strip
+render. Separately, the list parser only matches bullets at column 0, so
+indented sub-items — about 100 lines across the codex — render as loose
+paragraphs. Both are written up in `Codex_macOS/README.md`.
+
+None of the Swift is compiler-verified; there is no Swift toolchain in the
+environment these changes were made in.
+
+### Still missing
+
+- The Python TUI source. `requirements.txt` is present and earlier entries
+  describe a Textual browser, but no `codex_tui/` exists here.
+- The four `_assets/` reference images.
+- `embedded_systems_full_roadmap_book.pdf` is a generated 8 KB placeholder,
+  not the real roadmap book.
+
+### Verified
+
+- `tools/link_audit.py` — new, and now the source of these numbers: 274
+  markdown files, 1006 internal links, 0 broken, every file carrying an H1.
+  It strips code spans first, so the handful of `[text](path.md)` syntax
+  examples in prose no longer register as breakages the way an earlier
+  ad-hoc pass had them
+- `npm run build` clean — 32 modules, 466 kB (148 kB gzipped)
+- `npm run smoke` passes: progress survives a reload, no page errors
+
+---
+
 ## v3.0 — 2026-06-07
 
 Top-to-bottom SwiftUI redesign of the macOS app. The terminal-based TUI
