@@ -5,7 +5,7 @@
 > Algorithms, Embedded Systems, Industrial Protocols) — and two apps for
 > reading and learning it.
 
-**Version 3.1** · see [CHANGELOG.md](CHANGELOG.md)
+**Version 3.2** · see [CHANGELOG.md](CHANGELOG.md)
 
 ## What's in here
 
@@ -180,8 +180,11 @@ Honest inventory of what isn't here yet:
   10-page generated stub, not Parvizi's actual roadmap book. The real source
   is [github.com/m3y54m/Embedded-Engineering-Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap)
   (CC BY-SA 4.0).
-- **The macOS app has known performance issues** in its markdown pipeline —
-  documented in [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues).
+- **The macOS app has not been compiled** since its last changes — there is
+  no Swift toolchain in the environment they were written in. Run
+  `./Codex_macOS/package_app.sh --debug` before trusting a build. Remaining
+  smaller defects are listed in
+  [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues).
 
 ## Verification
 

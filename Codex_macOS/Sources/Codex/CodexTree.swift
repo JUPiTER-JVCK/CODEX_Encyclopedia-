@@ -22,24 +22,14 @@ final class CodexNode: Identifiable, Hashable {
     static func == (lhs: CodexNode, rhs: CodexNode) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 
-    /// Display title preferring the file's first H1 heading, falling back to filename.
+    /// Display title preferring the file's first H1 heading, falling back to
+    /// the filename.
+    ///
+    /// The tab strip asks for this on every render, so the read goes through
+    /// `DocumentStore`'s title cache rather than hitting the disk each time.
     func displayTitle() -> String {
-        guard let url = url, isFile,
-              let src = try? String(contentsOf: url, encoding: .utf8) else {
-            return label
-        }
-        // Skip YAML frontmatter and look for the first H1
-        var lines = src.components(separatedBy: "\n")
-        if lines.first == "---" {
-            if let close = lines.dropFirst().firstIndex(of: "---") {
-                lines = Array(lines.suffix(from: close + 1))
-            }
-        }
-        for line in lines {
-            let t = line.trimmingCharacters(in: .whitespaces)
-            if t.hasPrefix("# ") { return String(t.dropFirst(2)).trimmingCharacters(in: .whitespaces) }
-        }
-        return label
+        guard let url = url, isFile else { return label }
+        return DocumentStore.title(for: url) ?? label
     }
 }
 

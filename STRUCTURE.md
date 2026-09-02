@@ -1,7 +1,7 @@
 # STRUCTURE — Conventions
 
 How this repository is organized and what a new note has to look like to fit.
-Current as of v3.1.
+Current as of v3.2.
 
 ## Repository layout
 
