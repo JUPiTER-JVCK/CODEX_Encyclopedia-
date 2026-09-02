@@ -43,12 +43,26 @@ without relying on indentation alone, and numbers ordered lists per level
 rather than by flat index. The paragraph-continuation loop now breaks on any
 list marker, not just an unindented one.
 
+### Fixed — review findings on the above
+
+Copilot's review of the change caught a real bug in `depth(of:in:)`. It
+tested for a new nesting level *before* closing deeper ones, which lost an
+intermediate indent width: under a root at 0 with a child at 4, an item at 2
+is still inside the root and belongs one level down, but the function
+returned it to the top. Reordered to pop first, then decide. Regression cases
+added for the intermediate width, for re-descending afterwards, and for
+one-space steps.
+
+`DocumentStore.evict` tested membership of the kept suffix with a repeated
+scan inside its loop. Hoisted to a `Set`, which matters because the title
+cache holds up to 512 keys and evicts during a walk of the tree.
+
 ### Verified
 
 The parser helpers were ported to Python and exercised against the codex:
-five nesting cases pass (2-space, 4-space, three-level, mixed descent,
-ordered, tab-indented), and the port finds the 64 nested items across 549
-list items in the tree.
+nine nesting cases pass — 2-space, 4-space, three-level, mixed descent,
+ordered, tab-indented, plus the three regressions above — and the port finds
+64 nested items across 12 files in the tree.
 
 **Not compiler-verified.** There is no Swift toolchain in this environment,
 so `./Codex_macOS/package_app.sh --debug` on macOS is the outstanding check.

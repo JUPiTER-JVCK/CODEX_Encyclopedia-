@@ -137,10 +137,16 @@ enum DocumentStore {
     }
 
     /// Oldest-first eviction. Caller holds the lock.
+    ///
+    /// A key can appear more than once in `order` if it was re-created after
+    /// an eviction, so only drop entries that don't survive in the kept
+    /// suffix. That membership test is a `Set` rather than a repeated scan —
+    /// the title cache holds up to 512 keys and evicts on a walk of the tree.
     private static func evict<V>(_ store: inout [Key: V], _ order: inout [Key], limit: Int) {
         guard order.count > limit else { return }
         let excess = order.count - limit
-        for key in order.prefix(excess) where !order.dropFirst(excess).contains(key) {
+        let kept = Set(order.dropFirst(excess))
+        for key in order.prefix(excess) where !kept.contains(key) {
             store.removeValue(forKey: key)
         }
         order.removeFirst(excess)

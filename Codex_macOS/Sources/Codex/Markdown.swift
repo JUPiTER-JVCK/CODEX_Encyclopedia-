@@ -168,17 +168,21 @@ enum MarkdownParser {
     /// Map an indent width to a nesting depth, given the widths already seen
     /// in this list. Derived rather than assumed, so two-space and four-space
     /// sub-item conventions both work — and so does a file that mixes them.
+    ///
+    /// Close deeper levels first, *then* decide whether this indent opens a
+    /// new one. Testing for a new level before popping loses an intermediate
+    /// width: under a root at 0 with a child at 4, an item at 2 is still
+    /// inside the root, so it belongs one level down, not back at the top.
     private static func depth(of indent: Int, in levels: inout [Int]) -> Int {
-        if let last = levels.last, indent > last {
-            levels.append(indent)
-            return levels.count - 1
-        }
         while let last = levels.last, indent < last {
             levels.removeLast()
         }
-        if levels.isEmpty {
+        guard let last = levels.last else {
             levels.append(indent)
             return 0
+        }
+        if indent > last {
+            levels.append(indent)
         }
         return levels.count - 1
     }
