@@ -188,14 +188,27 @@ Honest inventory of what isn't here yet:
 
 ## Verification
 
+Three GitHub Actions workflows gate every pull request:
+
+| Workflow | Runs | Catches |
+|----------|------|---------|
+| `swift.yml` | `swift build` (debug + release) on macOS | The macOS app not compiling |
+| `docs.yml` | `link_audit.py`, `table_audit.py` | Broken links, missing H1s, malformed tables |
+| `lms.yml` | `npm ci`, build, audit, Playwright smoke | CORE not building, or losing progress on reload |
+
+All three run locally too:
+
 ```sh
 python3 tools/link_audit.py
+python3 tools/table_audit.py
+cd Codex_LMS && npm ci && npm run build
+cd Codex_macOS && swift build          # macOS only
 ```
 
-Resolves every relative link against the file containing it, skipping code
-spans so syntax examples aren't counted, and exits non-zero on a breakage —
-so it works as a CI gate. Currently:
+The audits resolve every relative link against the file containing it,
+skipping code spans so syntax examples aren't counted, and exit non-zero on a
+breakage. Currently:
 
 - 274 markdown files
 - 1006 internal links, 0 broken
-- Every file carries an H1
+- Every file carries an H1, every pipe table well-formed

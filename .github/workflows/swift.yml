@@ -1,0 +1,59 @@
+name: Swift
+
+# The compile gate. Without this, "does the macOS app build?" can only be
+# answered by hand on a Mac — which means in practice it goes unanswered and
+# unbuildable code reaches main. Public repos get free macOS runners, so
+# there is no reason for this to be a manual step.
+
+on:
+  pull_request:
+    paths:
+      - "Codex_macOS/**"
+      - ".github/workflows/swift.yml"
+  push:
+    branches: [main]
+    paths:
+      - "Codex_macOS/**"
+      - ".github/workflows/swift.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: swift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: swift build
+    runs-on: macos-14
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          swift --version
+          xcodebuild -version
+
+      # SwiftPM's build directory is the expensive part of a cold run.
+      - name: Cache .build
+        uses: actions/cache@v4
+        with:
+          path: Codex_macOS/.build
+          key: swiftpm-${{ runner.os }}-${{ hashFiles('Codex_macOS/Package.swift') }}-${{ hashFiles('Codex_macOS/Sources/**/*.swift') }}
+          restore-keys: |
+            swiftpm-${{ runner.os }}-${{ hashFiles('Codex_macOS/Package.swift') }}-
+            swiftpm-${{ runner.os }}-
+
+      - name: Build (debug)
+        working-directory: Codex_macOS
+        run: swift build
+
+      # Release catches a handful of things debug does not — dead-code paths
+      # the optimizer reaches, and any @inlinable/availability mistakes.
+      - name: Build (release)
+        working-directory: Codex_macOS
+        run: swift build -c release
