@@ -144,6 +144,7 @@ final class AppState: ObservableObject {
     }
 
     func reloadTree() {
+        DocumentStore.invalidateAll()
         root = CodexTree.build(root: projectRoot)
         allFiles = CodexTree.allFiles(under: projectRoot)
     }
@@ -195,8 +196,8 @@ struct RootView: View {
             TabStrip()
             ZStack {
                 if let url = state.selectedTab {
-                    if let src = try? String(contentsOf: url, encoding: .utf8) {
-                        MarkdownView(source: src,
+                    if let doc = DocumentStore.document(for: url, root: state.projectRoot) {
+                        MarkdownView(document: doc,
                                      sourceFile: url,
                                      projectRoot: state.projectRoot,
                                      onLink: { state.handleLink($0) })

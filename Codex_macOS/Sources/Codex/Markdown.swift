@@ -3,11 +3,20 @@ import AppKit
 
 // MARK: - Block model
 
+/// One entry in a list, with its nesting depth. Depth is derived from the
+/// source indentation rather than assumed, because the codex mixes two- and
+/// four-space sub-item indents.
+struct MDListItem {
+    let text: String
+    let depth: Int
+    let ordered: Bool
+}
+
 enum MDBlock {
     case heading(level: Int, text: String, anchor: String)
     case paragraph(String)
     case codeBlock(language: String?, code: String)
-    case list(items: [String], ordered: Bool)
+    case list(items: [MDListItem], ordered: Bool)
     case table(headers: [String], rows: [[String]])
     case blockquote(String)
     case rule
@@ -80,20 +89,22 @@ enum MarkdownParser {
                 continue
             }
 
-            // List (unordered / ordered)
-            if line.hasPrefix("- ") || line.hasPrefix("* ") ||
-               line.range(of: #"^\d+\.\s"#, options: .regularExpression) != nil {
-                let ordered = line.range(of: #"^\d+\.\s"#, options: .regularExpression) != nil
-                var items: [String] = []
-                while i < lines.count {
-                    let l = lines[i]
-                    if l.hasPrefix("- ") || l.hasPrefix("* ") {
-                        items.append(String(l.dropFirst(2))); i += 1
-                    } else if let r = l.range(of: #"^\d+\.\s"#, options: .regularExpression) {
-                        items.append(String(l[r.upperBound...])); i += 1
-                    } else { break }
+            // List (unordered / ordered, with nesting)
+            //
+            // A list only *starts* on a marker at the left margin — four or
+            // more leading spaces means an indented code block in markdown —
+            // but once started it absorbs indented markers as sub-items.
+            if let first = listMarker(line), first.indent < 4 {
+                var items: [MDListItem] = []
+                var indents: [Int] = []
+
+                while i < lines.count, let item = listMarker(lines[i]) {
+                    items.append(MDListItem(text: item.text,
+                                            depth: depth(of: item.indent, in: &indents),
+                                            ordered: item.ordered))
+                    i += 1
                 }
-                blocks.append(.list(items: items, ordered: ordered))
+                blocks.append(.list(items: items, ordered: first.ordered))
                 continue
             }
 
@@ -123,7 +134,7 @@ enum MarkdownParser {
                 let l = lines[i]
                 if l.trimmingCharacters(in: .whitespaces).isEmpty { break }
                 if l.hasPrefix("#") || l.hasPrefix("```") || l.hasPrefix(">") ||
-                   l.hasPrefix("- ") || l.hasPrefix("* ") ||
+                   listMarker(l) != nil ||
                    (l.contains("|") && i + 1 < lines.count && lines[i+1].contains("-")) {
                     break
                 }
@@ -133,6 +144,47 @@ enum MarkdownParser {
             blocks.append(.paragraph(para))
         }
         return blocks
+    }
+
+    /// Split a list line into its indent width, marker kind, and content.
+    /// Returns nil when the line isn't a list item at all.
+    private static func listMarker(_ line: String) -> (indent: Int, ordered: Bool, text: String)? {
+        var indent = 0
+        var idx = line.startIndex
+        while idx < line.endIndex, line[idx] == " " || line[idx] == "\t" {
+            indent += line[idx] == "\t" ? 4 : 1
+            idx = line.index(after: idx)
+        }
+        let rest = line[idx...]
+        if rest.hasPrefix("- ") || rest.hasPrefix("* ") || rest.hasPrefix("+ ") {
+            return (indent, false, String(rest.dropFirst(2)))
+        }
+        if let r = rest.range(of: #"^\d+[.)]\s"#, options: .regularExpression) {
+            return (indent, true, String(rest[r.upperBound...]))
+        }
+        return nil
+    }
+
+    /// Map an indent width to a nesting depth, given the widths already seen
+    /// in this list. Derived rather than assumed, so two-space and four-space
+    /// sub-item conventions both work — and so does a file that mixes them.
+    ///
+    /// Close deeper levels first, *then* decide whether this indent opens a
+    /// new one. Testing for a new level before popping loses an intermediate
+    /// width: under a root at 0 with a child at 4, an item at 2 is still
+    /// inside the root, so it belongs one level down, not back at the top.
+    private static func depth(of indent: Int, in levels: inout [Int]) -> Int {
+        while let last = levels.last, indent < last {
+            levels.removeLast()
+        }
+        guard let last = levels.last else {
+            levels.append(indent)
+            return 0
+        }
+        if indent > last {
+            levels.append(indent)
+        }
+        return levels.count - 1
     }
 
     private static func parseRow(_ line: String) -> [String] {
@@ -193,28 +245,16 @@ enum InlineRenderer {
 // MARK: - The renderer
 
 struct MarkdownView: View {
-    let source: String
+    /// Read and parsed by `DocumentStore`, not here — doing either inside
+    /// `body` costs a disk read and a full parse on every re-render.
+    let document: CodexDocument
     let sourceFile: URL?
     let projectRoot: URL
     let onLink: (LinkResolver.Target) -> Void
     @State private var scrollAnchor: String? = nil
 
-    private var frontmatter: PageFrontmatter? {
-        guard let f = sourceFile else { return nil }
-        return PageFrontmatter.parse(source: source, file: f, root: projectRoot)
-    }
-
-    private var blocks: [MDBlock] {
-        // Skip first H1 if frontmatter card will show it
-        var blocks = MarkdownParser.parse(source)
-        if let fm = frontmatter, fm.h1Used {
-            if let firstHeading = blocks.firstIndex(where: { if case .heading = $0 { return true } else { return false } }),
-               case .heading(let lvl, _, _) = blocks[firstHeading], lvl == 1 {
-                blocks.remove(at: firstHeading)
-            }
-        }
-        return blocks
-    }
+    private var frontmatter: PageFrontmatter? { document.frontmatter }
+    private var blocks: [MDBlock] { document.blocks }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -341,32 +381,80 @@ private struct ParagraphBlock: View {
 // MARK: - List
 
 private struct ListBlock: View {
-    let items: [String]; let ordered: Bool
-    let sourceFile: URL?; let projectRoot: URL
+    let items: [MDListItem]
+    let ordered: Bool
+    let sourceFile: URL?
+    let projectRoot: URL
     let onLink: (LinkResolver.Target) -> Void
+
+    /// Ordered lists count per nesting level, so a sub-list restarts at 1
+    /// rather than continuing its parent's run. Computed once at init because
+    /// it depends on every preceding item.
+    private let numbering: [Int]
+
+    init(items: [MDListItem], ordered: Bool, sourceFile: URL?,
+         projectRoot: URL, onLink: @escaping (LinkResolver.Target) -> Void) {
+        self.items = items
+        self.ordered = ordered
+        self.sourceFile = sourceFile
+        self.projectRoot = projectRoot
+        self.onLink = onLink
+
+        var counters: [Int: Int] = [:]
+        var numbers: [Int] = []
+        for item in items {
+            counters[item.depth, default: 0] += 1
+            for deeper in counters.keys.filter({ $0 > item.depth }) {
+                counters[deeper] = 0
+            }
+            numbers.append(counters[item.depth] ?? 1)
+        }
+        self.numbering = numbers
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            ForEach(0..<items.count, id: \.self) { idx in
+            ForEach(items.indices, id: \.self) { idx in
                 HStack(alignment: .top, spacing: 10) {
                     Group {
-                        if ordered {
-                            Text("\(idx + 1).")
+                        if items[idx].ordered {
+                            Text("\(numbering[idx]).")
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                                 .foregroundColor(Theme.peach)
                                 .frame(minWidth: 22, alignment: .trailing)
                         } else {
-                            Circle().fill(Theme.accent.opacity(0.85))
-                                .frame(width: 5, height: 5)
+                            bullet(depth: items[idx].depth)
                                 .padding(.top, 8)
                                 .frame(width: 22)
                         }
                     }
-                    ParagraphBlock(text: items[idx], sourceFile: sourceFile, projectRoot: projectRoot, onLink: onLink)
+                    ParagraphBlock(text: items[idx].text,
+                                   sourceFile: sourceFile,
+                                   projectRoot: projectRoot,
+                                   onLink: onLink)
                 }
+                .padding(.leading, CGFloat(items[idx].depth) * 18)
             }
         }
         .padding(.leading, 4)
+    }
+
+    /// The marker glyph cycles with depth, so nesting stays legible without
+    /// depending on indentation alone.
+    @ViewBuilder
+    private func bullet(depth: Int) -> some View {
+        switch depth % 3 {
+        case 0:
+            Circle().fill(Theme.accent.opacity(0.85))
+                .frame(width: 5, height: 5)
+        case 1:
+            Circle().strokeBorder(Theme.accent.opacity(0.75), lineWidth: 1.3)
+                .frame(width: 6, height: 6)
+        default:
+            RoundedRectangle(cornerRadius: 1)
+                .fill(Theme.accent.opacity(0.65))
+                .frame(width: 6, height: 1.5)
+        }
     }
 }
 

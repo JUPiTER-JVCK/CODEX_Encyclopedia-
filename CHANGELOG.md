@@ -1,5 +1,84 @@
 # CHANGELOG
 
+## v3.2 — 2026-08-30
+
+Two defects in the macOS reader, both recorded in the v3.1 audit, now fixed.
+
+### Fixed — the markdown pipeline re-read and re-parsed on every render
+
+`MarkdownView.blocks` was a computed property running the full parser on each
+access, and the render loop touched it once for `count` and again per index —
+so a 200-block document parsed on the order of 400 times per render. In front
+of that, `RootView.mainPane` called `String(contentsOf:)` **inside `body`**,
+putting a synchronous disk read on the main thread for every state change,
+including hovers and panel toggles. `CodexNode.displayTitle()` compounded it
+by re-reading every open file per tab-strip render to find its H1.
+
+New `Sources/Codex/DocumentStore.swift` reads and parses each file once per
+revision, keyed on path plus modification date and size — so editing a file
+outside the app invalidates its entry without an explicit reload. Two caches:
+full documents (48) and first-H1 titles (512, scanned with early exit, since
+the sidebar wants titles for files nobody has opened). `⌘R` clears both.
+
+`MarkdownView` now takes a `CodexDocument`; `blocks` and `frontmatter` are
+plain field reads.
+
+### Fixed — nested list items rendered as loose paragraphs
+
+The parser matched `- ` and `* ` only at column 0, so indented sub-items
+broke out of the list. 64 items across 12 files were affected, among them
+`00d_Digital_Circuits/lessons/digital_labs.md`,
+`Network/13_Network_Application/protocols/mqtt.md`, and
+`Network/11_Network_Internet/lessons/internet_labs.md`.
+
+`MDListItem` now carries a depth alongside its text. `listMarker(_:)` splits
+a line into indent width, marker kind, and content — accepting `-`, `*`, `+`,
+`N.` and `N)` — and `depth(of:in:)` derives nesting from the indent widths
+actually observed, so two-space and four-space conventions both work, as does
+a file that mixes them. A list still only *starts* at the left margin, since
+four or more leading spaces means an indented code block.
+
+`ListBlock` indents by depth, cycles the marker glyph so nesting reads
+without relying on indentation alone, and numbers ordered lists per level
+rather than by flat index. The paragraph-continuation loop now breaks on any
+list marker, not just an unindented one.
+
+### Fixed — review findings on the above
+
+Copilot's review of the change caught a real bug in `depth(of:in:)`. It
+tested for a new nesting level *before* closing deeper ones, which lost an
+intermediate indent width: under a root at 0 with a child at 4, an item at 2
+is still inside the root and belongs one level down, but the function
+returned it to the top. Reordered to pop first, then decide. Regression cases
+added for the intermediate width, for re-descending afterwards, and for
+one-space steps.
+
+`DocumentStore.evict` tested membership of the kept suffix with a repeated
+scan inside its loop. Hoisted to a `Set`, which matters because the title
+cache holds up to 512 keys and evicts during a walk of the tree.
+
+### Verified
+
+The parser helpers were ported to Python and exercised against the codex:
+nine nesting cases pass — 2-space, 4-space, three-level, mixed descent,
+ordered, tab-indented, plus the three regressions above — and the port finds
+64 nested items across 12 files in the tree.
+
+**Not compiler-verified.** There is no Swift toolchain in this environment,
+so `./Codex_macOS/package_app.sh --debug` on macOS is the outstanding check.
+
+### Still open
+
+Untouched from the v3.1 audit: `closeTab` selects the last tab rather than
+the neighbour; `allFiles` is not `@Published`, so `⌘R` doesn't refresh the
+palette index in the UI; `Bookmarks.touch()` writes synchronously per file
+open; `NavigationHistory` has no cap; `String(contentsOf:)` is called without
+an encoding in `findProjectRoot()`. Two more need real hardware to settle —
+whether the sidebar's `.behindWindow` vibrancy survives `RootView`'s opaque
+background, and whether code blocks scroll or wrap horizontally.
+
+---
+
 ## v3.1 — 2026-08-30
 
 Repository consolidation. The codex, the macOS reader, and a React

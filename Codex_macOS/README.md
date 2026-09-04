@@ -23,6 +23,11 @@ SwiftUI rendering the markdown tree straight on the GPU.
 - **⌘P command palette** — fuzzy file matching across the whole codex
 - **Right-click sidebar menu** — Open / Open in New Tab / Pin / Reveal in
   Finder / Copy Path
+- **Nested lists** — sub-items keep their indentation, with the marker glyph
+  cycling by depth and ordered lists restarting their count per level
+- **Parsed once per revision** — `DocumentStore` caches read-and-parsed
+  documents on path + modification date, so scrolling, switching tabs, and
+  toggling panels don't re-read or re-parse anything
 - **Bookmarks + recents** persisted to
   `~/Library/Application Support/Codex/state.json`
 - **Portable bundle** — records the project path at build time, so the `.app`
@@ -121,27 +126,8 @@ Codex_macOS/
 
 ## Known issues
 
-Found by inspection, not yet fixed. None of it has been compiler-verified
-against a recent SDK.
-
-**Performance — the markdown pipeline does redundant work.**
-
-- `MarkdownView.blocks` is a computed property that runs the full parser on
-  every access, and the render loop reads it once for `count` and again for
-  every index. It also calls `frontmatter`, itself computed. A 200-block
-  document parses on the order of 400 times per render.
-- `RootView.mainPane` calls `String(contentsOf:)` **inside `body`**, so every
-  state change re-reads the file synchronously off disk on the main thread.
-- `CodexNode.displayTitle()` reads the file to find its H1, and the tab strip
-  calls it per render — so every render re-reads every open file.
-
-One cache keyed on path + modification date addresses all three.
-
-**Rendering fidelity.**
-
-- The list parser only matches `- ` / `* ` at column 0, so indented sub-items
-  break out of the list and render as loose paragraphs. Roughly 100 lines
-  across the codex are affected.
+Found by inspection. None of it has been compiler-verified against a recent
+SDK — there is no Swift toolchain in the environment these were written in.
 
 **Smaller.**
 
@@ -155,6 +141,16 @@ One cache keyed on path + modification date addresses all three.
 - `prettifyLayer` renders `00  Physics` with two spaces but `00b Devices`
   with one; `prettyFilename`'s `"Ip"→"IP"` rule also turns `Ipc` into `IPc`.
 - A `Tools` band is declared in `bands` with no corresponding directory.
+
+**Fixed, pending a compile.**
+
+The markdown pipeline used to re-read and re-parse a document on every
+render — `blocks` was computed, the render loop touched it per index, and a
+synchronous `String(contentsOf:)` sat in `body`. `DocumentStore` now holds
+both, keyed on path plus modification date and size. The list parser matched
+bullets only at column 0, so indented sub-items rendered as loose paragraphs;
+`listMarker` and `depth(of:in:)` derive nesting from the observed indent
+widths instead.
 
 **Unverified — needs a run on real hardware.**
 
