@@ -4,16 +4,14 @@ name: LMS
 # one that matters: it asserts progress survives a reload, which is the bug
 # that made the app silently forget everything outside a Claude artifact.
 
+# No path filters. A required status check that never runs leaves a pull
+# request permanently unmergeable, so this runs on every PR — a wasted
+# minute on a docs-only change costs far less than a merge that can never
+# complete.
 on:
   pull_request:
-    paths:
-      - "Codex_LMS/**"
-      - ".github/workflows/lms.yml"
   push:
     branches: [main]
-    paths:
-      - "Codex_LMS/**"
-      - ".github/workflows/lms.yml"
   workflow_dispatch:
 
 permissions:

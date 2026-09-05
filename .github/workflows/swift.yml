@@ -5,16 +5,14 @@ name: Swift
 # unbuildable code reaches main. Public repos get free macOS runners, so
 # there is no reason for this to be a manual step.
 
+# No path filters. A required status check that never runs leaves a pull
+# request permanently unmergeable, so every workflow runs on every PR — the
+# few seconds spent building Swift on a docs-only change is worth far less
+# than a merge that can never complete.
 on:
   pull_request:
-    paths:
-      - "Codex_macOS/**"
-      - ".github/workflows/swift.yml"
   push:
     branches: [main]
-    paths:
-      - "Codex_macOS/**"
-      - ".github/workflows/swift.yml"
   workflow_dispatch:
 
 permissions:

@@ -188,21 +188,37 @@ Honest inventory of what isn't here yet:
 
 ## Verification
 
-Three GitHub Actions workflows gate every pull request:
+Three GitHub Actions workflows run on **every** pull request and every push
+to `main` — no path filters, so a docs-only change still builds the Swift and
+the LMS:
 
 | Workflow | Runs | Catches |
 |----------|------|---------|
-| `swift.yml` | `swift build` (debug + release) on macOS | The macOS app not compiling |
+| `swift.yml` | `swift build` debug + release, on `macos-14` | The macOS app not compiling |
 | `docs.yml` | `link_audit.py`, `table_audit.py` | Broken links, missing H1s, malformed tables |
-| `lms.yml` | `npm ci`, build, audit, Playwright smoke | CORE not building, or losing progress on reload |
+| `lms.yml` | `npm ci`, build, `npm audit`, Playwright smoke test | CORE not building, or losing progress on reload |
 
-All three run locally too:
+Running every workflow on every PR is deliberate. A *required* status check
+that never fires leaves a pull request permanently unmergeable, so path
+filters and branch protection combine badly.
+
+The same checks run locally:
 
 ```sh
+# Docs — both exit non-zero on a breakage
 python3 tools/link_audit.py
 python3 tools/table_audit.py
-cd Codex_LMS && npm ci && npm run build
-cd Codex_macOS && swift build          # macOS only
+
+# LMS — build, then the smoke test against a running preview server
+cd Codex_LMS
+npm ci && npm run build
+npm run preview -- --port 4173 &
+npm run smoke -- http://localhost:4173/
+
+# macOS app — needs a Mac with the Xcode command-line tools
+cd Codex_macOS
+swift build
+swift build -c release
 ```
 
 The audits resolve every relative link against the file containing it,
