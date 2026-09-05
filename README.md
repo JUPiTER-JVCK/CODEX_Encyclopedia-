@@ -82,7 +82,9 @@ Full feature list and source layout: [`Codex_macOS/README.md`](Codex_macOS/READM
 
 ## Running CORE
 
-Requires Node 18+.
+Requires Node 20.19+ or 22.12+ — what Vite 8 declares in its `engines`, and
+what `Codex_LMS/package.json` now enforces so npm warns instead of failing
+mid-install.
 
 ```sh
 cd Codex_LMS
@@ -180,22 +182,58 @@ Honest inventory of what isn't here yet:
   10-page generated stub, not Parvizi's actual roadmap book. The real source
   is [github.com/m3y54m/Embedded-Engineering-Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap)
   (CC BY-SA 4.0).
-- **The macOS app has not been compiled** since its last changes — there is
-  no Swift toolchain in the environment they were written in. Run
-  `./Codex_macOS/package_app.sh --debug` before trusting a build. Remaining
-  smaller defects are listed in
-  [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues).
+- **The macOS app builds in CI but has not been run.** `swift.yml` compiles
+  it debug and release on every PR, so "does it compile" is now answered
+  automatically — but nothing exercises the UI. The behavioural questions in
+  [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues) still need a
+  human at a Mac: sidebar vibrancy under an opaque parent background, and
+  whether code blocks scroll or wrap.
 
 ## Verification
 
+Three GitHub Actions workflows run on **every** pull request and every push
+to `main` — no path filters, so a docs-only change still builds the Swift and
+the LMS:
+
+| Workflow | Runs | Catches |
+|----------|------|---------|
+| `swift.yml` | `swift build` debug + release, on `macos-14` | The macOS app not compiling |
+| `docs.yml` | `link_audit.py`, `table_audit.py` | Broken links, missing H1s, malformed tables |
+| `lms.yml` | `npm ci`, build, `npm audit`, Playwright smoke test | CORE not building, or losing progress on reload |
+
+Running every workflow on every PR is deliberate. A *required* status check
+that never fires leaves a pull request permanently unmergeable, so path
+filters and branch protection combine badly.
+
+The same checks run locally:
+
 ```sh
+# Docs — both exit non-zero on a breakage
 python3 tools/link_audit.py
+python3 tools/table_audit.py
+
+# LMS — build, then smoke-test against a running preview server.
+# The wait loop matters: `npm run preview &` returns before the server is
+# listening, so without it the smoke test races the startup and fails on a
+# working app.
+cd Codex_LMS
+npm ci && npm run build
+npm run preview -- --port 4173 &
+until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done
+npm run smoke -- http://localhost:4173/
+cd ..
+
+# macOS app — needs a Mac with the Xcode command-line tools
+cd Codex_macOS
+swift build
+swift build -c release
+cd ..
 ```
 
-Resolves every relative link against the file containing it, skipping code
-spans so syntax examples aren't counted, and exits non-zero on a breakage —
-so it works as a CI gate. Currently:
+The audits resolve every relative link against the file containing it,
+skipping code spans so syntax examples aren't counted, and exit non-zero on a
+breakage. Currently:
 
 - 274 markdown files
 - 1006 internal links, 0 broken
-- Every file carries an H1
+- Every file carries an H1, every pipe table well-formed
