@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "CORE — a seven-phase computing curriculum: Logic, Hardware, CLI/OS, Programming, Web, Networking, Security",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

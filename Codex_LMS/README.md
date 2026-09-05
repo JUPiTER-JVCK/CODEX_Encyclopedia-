@@ -111,9 +111,14 @@ It expects a server already running (`npm run preview`) and takes the URL as
 its first argument, defaulting to `http://localhost:4173/`:
 
 ```sh
-npm run preview &
+npm run preview -- --port 4173 &
+until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done
 npm run smoke -- http://localhost:4173/
 ```
+
+`npm run preview &` returns as soon as the process starts, not when it is
+listening, so the wait loop is what stops the smoke test racing startup and
+failing against a perfectly good build. CI uses the same loop.
 
 It finds Chromium on its own: whatever `npx playwright install chromium`
 put in place, falling back to a pre-provisioned binary at
