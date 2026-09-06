@@ -112,8 +112,11 @@ its first argument, defaulting to `http://localhost:4173/`:
 
 ```sh
 npm run preview -- --port 4173 &
-until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done
-npm run smoke -- http://localhost:4173/
+for i in $(seq 1 30); do
+  curl -sf -o /dev/null http://localhost:4173/ && break
+  sleep 1
+done
+curl -sf -o /dev/null http://localhost:4173/ && npm run smoke -- http://localhost:4173/
 ```
 
 `npm run preview &` returns as soon as the process starts, not when it is
