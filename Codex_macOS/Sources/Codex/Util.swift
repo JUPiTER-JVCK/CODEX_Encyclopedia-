@@ -23,7 +23,6 @@ enum FuzzyMatch {
     struct Ranked: Identifiable, Hashable {
         var id: String { url.path }
         let url: URL
-        let display: String
         let parent: String
         let score: Int
     }
@@ -38,8 +37,7 @@ enum FuzzyMatch {
             let target = trimmed.isEmpty ? rel : rel
             if let s = score(query: trimmed, candidate: target) {
                 let parent = (rel as NSString).deletingLastPathComponent
-                out.append(Ranked(url: url, display: url.lastPathComponent,
-                                  parent: parent, score: s))
+                out.append(Ranked(url: url, parent: parent, score: s))
             }
         }
         return out.sorted { $0.score > $1.score }.prefix(limit).map { $0 }

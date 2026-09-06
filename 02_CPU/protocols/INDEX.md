@@ -1,4 +1,4 @@
-# CPU — Protocols & Conventions
+# CPU — Protocols
 
 Not wire protocols — these are the *software contracts* the CPU layer enforces.
 

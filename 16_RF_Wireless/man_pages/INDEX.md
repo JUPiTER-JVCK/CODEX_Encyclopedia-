@@ -1,4 +1,4 @@
-# RF / Wireless — Manual Pages / Tools
+# RF / Wireless — Manual Pages
 
 ## Dedicated man page references
 

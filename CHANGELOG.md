@@ -1,5 +1,52 @@
 # CHANGELOG
 
+## v3.3 — 2026-09-06
+
+### Fixed — the 138 section indexes were effectively unnamed
+
+Every sub-section folder holds an `INDEX.md`, and the macOS app rendered all
+of them identically: `prettyFilename` mapped `INDEX.md` to the literal string
+`Index`. The command palette was the worst of it — up to 80 result rows all
+reading `Index`, told apart only by a small monospaced path underneath.
+`CodexNode.displayTitle()` had returned the real heading since v3.2 and was
+never called from anywhere.
+
+The markdown had drifted too. 33 of the 138 headings followed no single
+pattern: `man_pages/` was variously *Manual Pages*, *Tools* and *Manual Pages
+/ Tools*, against the app's own *Man Pages*; `protocols/` had thirteen
+distinct forms. Seventeen files opened on a prepended `## Dedicated …` block
+with the H1 stranded below it, and five carried YAML frontmatter that
+`STRUCTURE.md` exempts entry points from — the same five a v3.0 bulk edit
+clobbered the table headers of.
+
+All of it is now `<Layer> — <Section>` with the H1 first in the file:
+
+- 33 headings retitled, 2 layer names reconciled (`RF / Wireless`,
+  `Industrial & Automotive Protocols`).
+- 17 H1s lifted above their prepended block. Seven of those had content
+  following with no heading of its own, which would have been re-parented
+  under the block, so they gained a `## Lesson ladder`.
+- 5 files stripped of frontmatter.
+- 13 intro lines added. Several old titles carried real information —
+  `Physics — Laws, Units, Constants` said the layer has laws, not protocols —
+  so that sentence moved below the heading rather than being dropped.
+
+App side: `CodexTree.fullTitle(for:)` reads the H1 through `DocumentStore`'s
+existing title cache and now backs the palette, tab strip, recents and
+inspector — the flat lists where a name has no context. The sidebar and the
+breadcrumb keep a short `Overview`, matching how a layer's `README.md` was
+already labelled, since the layer and section above the row say the rest.
+`man_pages` is `Manual Pages` there too, so the app and the markdown agree.
+
+No file was renamed: 418 links point at `INDEX.md`.
+
+### Added — `tools/title_audit.py`
+
+Checks the canonical heading, H1-first ordering, the frontmatter exemption
+and layer-name consistency. All four faults arrived through bulk edits that
+nothing checked, so it gates in CI alongside the link and table audits. The
+`docs.yml` job is renamed `docs audit` now that it runs three.
+
 ## v3.2 — 2026-08-30
 
 Two defects in the macOS reader, both recorded in the v3.1 audit, now fixed.

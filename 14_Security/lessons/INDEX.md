@@ -1,11 +1,10 @@
+# Security — Lessons
 
 ## Dedicated Lesson Modules
 
 | File | Covers |
 |------|--------|
 | [Security — Interactive Labs](./security_labs.md) | Nmap scanning, hashcat, seccomp sandbox |
-
-# Security — Lessons
 
 ## Foundations
 1. **Threat modeling** — STRIDE on a real app you know; produce data-flow diagram.

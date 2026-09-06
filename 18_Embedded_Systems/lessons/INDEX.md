@@ -1,3 +1,4 @@
+# Embedded Systems — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Embedded Systems — Interactive Labs](./embedded_labs.md) | Bare-metal blink, FreeRTOS tasks, UART, I2C sensor |
 
-# Embedded Systems — Lessons (roadmap-aligned)
+## Lesson ladder
 
 Ordered to mirror the *Embedded Systems Engineering Roadmap* image. Each step
 links to where deeper material lives in the codex.

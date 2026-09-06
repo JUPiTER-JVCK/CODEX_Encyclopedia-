@@ -1,4 +1,4 @@
-# AI / ML — Manual Pages / Tools
+# AI / ML — Manual Pages
 
 ## Dedicated man page references
 

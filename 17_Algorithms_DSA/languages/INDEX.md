@@ -1,4 +1,7 @@
-# Algorithms & DSA — Languages (pick one)
+# Algorithms & DSA — Languages
+
+Pick one and stay with it — fluency in a single language beats breadth once
+the clock is running.
 
 ## Quick recommendation
 | Goal | Pick |

@@ -1,4 +1,4 @@
-# AI / ML — Protocols & Specs
+# AI / ML — Protocols
 
 ## Model context / tool-use protocols
 | Spec | Owner | Purpose |

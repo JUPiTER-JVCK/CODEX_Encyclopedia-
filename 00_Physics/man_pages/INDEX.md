@@ -1,4 +1,7 @@
-# Physics — Tools
+# Physics — Manual Pages
+
+Simulators rather than system utilities — the tooling at this layer is solvers
+you install, not commands the OS ships.
 
 | Tool | Purpose |
 |------|---------|

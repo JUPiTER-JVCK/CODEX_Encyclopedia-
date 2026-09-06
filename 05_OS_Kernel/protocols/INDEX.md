@@ -1,12 +1,4 @@
----
-title: "OS Kernel — Protocol Reference"
-layer: 05_OS_Kernel
-section: protocols
-tags: [protocols, index, reference]
-updated: 2026-06-07
----
-
-# OS Kernel — Protocol Reference
+# OS Kernel — Protocols
 
 > POSIX & syscall ABI standards governing the kernel/user-space boundary.
 

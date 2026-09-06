@@ -1,3 +1,4 @@
+# Network Transport — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Network Transport — Interactive Labs](./transport_labs.md) | TCP handshake capture, congestion window, UDP load test |
 
-# Network Transport — Lessons
+## Lesson ladder
 
 1. **BSD sockets** — TCP echo server in C / Python / Go / Rust.
 2. **Non-blocking I/O** — `select`, `poll`, `epoll` (Linux), `kqueue` (BSD/macOS), IOCP (Win).

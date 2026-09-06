@@ -1,4 +1,4 @@
-# Security — Protocols & Specs
+# Security — Protocols
 
 Security-specific protocols & data formats. Protocols are listed here only when
 their primary purpose is security; otherwise they live in their owning layer's

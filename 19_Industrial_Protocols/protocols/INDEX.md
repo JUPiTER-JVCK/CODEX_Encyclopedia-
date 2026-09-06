@@ -1,12 +1,4 @@
----
-title: "Industrial Protocols — Protocol Reference"
-layer: 19_Industrial_Protocols
-section: protocols
-tags: [protocols, index, reference]
-updated: 2026-06-07
----
-
-# Industrial Protocols — Protocol Reference
+# Industrial & Automotive Protocols — Protocols
 
 > Fieldbus, SCADA, and OT-network protocols: Modbus, OPC UA, PROFINET, DNP3.
 

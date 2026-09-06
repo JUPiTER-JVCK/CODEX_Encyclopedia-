@@ -1,3 +1,4 @@
+# Network Internet — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Network Internet — Interactive Labs](./internet_labs.md) | Subnetting drill, traceroute analysis, BGP simulation |
 
-# Network Internet — Lessons
+## Lesson ladder
 
 1. **Subnetting drills** — `/24`, `/25`, `/22`, VLSM; do by hand, verify with `ipcalc`.
 2. **IPv6 fluency** — link-local, ULA, GUA; SLAAC vs DHCPv6.

@@ -1,4 +1,4 @@
-# Physics — "Languages"
+# Physics — Languages
 
 Mostly math + simulation tooling — physics speaks math first.
 

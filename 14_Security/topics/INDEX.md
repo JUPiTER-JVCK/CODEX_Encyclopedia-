@@ -1,4 +1,7 @@
-# Security — Topics (organized by source layer)
+# Security — Topics
+
+Organised by the layer each topic attacks, so an entry sits beside the layer
+that owns it in the rest of the codex.
 
 ## Layer 01 — Circuit Board / hardware
 - **Glitching / fault injection** — voltage, clock, EM, laser

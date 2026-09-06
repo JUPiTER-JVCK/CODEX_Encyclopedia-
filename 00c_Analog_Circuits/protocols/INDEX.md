@@ -1,4 +1,4 @@
-# Analog Circuits — Standards & Specs
+# Analog Circuits — Protocols
 
 Analog deals with *measurements* more than *protocols*. The "specs" here are
 the standardized characterizations and audio/video formats that sit on top of

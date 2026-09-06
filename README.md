@@ -5,7 +5,7 @@
 > Algorithms, Embedded Systems, Industrial Protocols) — and two apps for
 > reading and learning it.
 
-**Version 3.2** · see [CHANGELOG.md](CHANGELOG.md)
+**Version 3.3** · see [CHANGELOG.md](CHANGELOG.md)
 
 ## What's in here
 
@@ -140,7 +140,7 @@ CODEX_Encyclopedia-/
 │                          ─┘
 ├── Codex_macOS/            ← SwiftUI reader source
 ├── Codex_LMS/              ← React curriculum source
-└── tools/                  ← maintenance scripts (link audit)
+└── tools/                  ← maintenance scripts (link, table, title audits)
 ```
 
 Anything added at the root that isn't a layer must also be registered in
@@ -163,7 +163,9 @@ See [STRUCTURE.md](STRUCTURE.md). In brief:
 
 - Markdown only, UTF-8, LF endings
 - `lowercase_with_underscores.md` filenames; layer folders keep their numeric prefix
-- Every note opens with YAML frontmatter (`title`, `layer`, `section`, `tags`, `updated`)
+- Every *content note* opens with YAML frontmatter (`title`, `layer`, `section`,
+  `tags`, `updated`); entry points (`INDEX.md`, `README.md`) carry none
+- Every section `INDEX.md` is titled `<Layer> — <Section>`, H1 first in the file
 - Link rather than duplicate — each protocol lives in the layer that owns it on the wire
 - Images live in `_assets/`, referenced relatively
 
@@ -187,8 +189,9 @@ Honest inventory of what isn't here yet:
   it debug and release on every PR, so "does it compile" is now answered
   automatically — but nothing exercises the UI. The behavioural questions in
   [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues) still need a
-  human at a Mac: sidebar vibrancy under an opaque parent background, and
-  whether code blocks scroll or wrap.
+  human at a Mac: sidebar vibrancy under an opaque parent background, whether
+  code blocks scroll or wrap, and whether the section-index titles now read as
+  intended (sidebar "Overview", ⌘P "Circuit Board — Languages").
 
 ## Verification
 
@@ -199,7 +202,7 @@ the LMS:
 | Workflow | Runs | Catches |
 |----------|------|---------|
 | `swift.yml` | `swift build` debug + release, on `macos-14` | The macOS app not compiling |
-| `docs.yml` | `link_audit.py`, `table_audit.py` | Broken links, missing H1s, malformed tables |
+| `docs.yml` | `link_audit.py`, `table_audit.py`, `title_audit.py` | Broken links, missing H1s, malformed tables, uncanonical section titles |
 | `lms.yml` | `npm ci`, build, `npm audit`, Playwright smoke test | CORE not building, or losing progress on reload |
 
 Running every workflow on every PR is deliberate. A *required* status check
@@ -209,9 +212,10 @@ filters and branch protection combine badly.
 The same checks run locally:
 
 ```sh
-# Docs — both exit non-zero on a breakage
+# Docs — each exits non-zero on a breakage
 python3 tools/link_audit.py
 python3 tools/table_audit.py
+python3 tools/title_audit.py
 
 # LMS — build, then smoke-test. `smoke:local` starts the preview server,
 # waits (bounded) for it to actually listen, runs the test, and cleans up.
@@ -234,3 +238,4 @@ breakage. Currently:
 - 274 markdown files
 - 1009 internal links, 0 broken
 - Every file carries an H1, every pipe table well-formed
+- All 138 section indexes titled `<Layer> — <Section>`

@@ -1,4 +1,7 @@
-# Digital Circuits — Standards & Specs
+# Digital Circuits — Protocols
+
+Language and exchange-format standards rather than wire protocols — what an
+HDL toolchain has to implement.
 
 ## HDL & exchange formats
 | Standard | Body | Scope |

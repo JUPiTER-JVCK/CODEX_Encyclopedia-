@@ -1,11 +1,10 @@
+# RF / Wireless — Lessons
 
 ## Dedicated Lesson Modules
 
 | File | Covers |
 |------|--------|
 | [RF & Wireless — Interactive Labs](./rf_labs.md) | SDR FM, Wi-Fi capture, Bluetooth scan, LoRa hello |
-
-# RF / Wireless — Lessons
 
 ## SDR fundamentals
 1. **SDR starter kit** — RTL-SDR + antenna; install `gqrx`/`SDR++`; tune FM band.

@@ -1,11 +1,10 @@
+# AI / ML — Topics
 
 ## Dedicated Topic Deep Dives
 
 | File | Covers |
 |------|--------|
 | [Transformer Architecture](./transformer_architecture.md) | MHA, KV cache, MoE, scaling laws, RoPE |
-
-# AI / ML — Topics
 
 ## Classical ML
 - **Linear / logistic regression**, regularization (L1, L2, elastic net)

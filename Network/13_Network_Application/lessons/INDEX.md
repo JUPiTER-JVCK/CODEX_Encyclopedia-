@@ -1,3 +1,4 @@
+# Network Application — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Network Application — Interactive Labs](./application_labs.md) | DNS trace, TLS decode, HTTP/2 framing |
 
-# Network Application — Lessons
+## Lesson ladder
 
 1. **HTTP/1.1 by hand** — `telnet` (or `nc`) to port 80; type `GET / HTTP/1.1\r\nHost: ...\r\n\r\n`.
 2. **HTTP/2 server** — nginx or h2o; verify with `curl --http2`.

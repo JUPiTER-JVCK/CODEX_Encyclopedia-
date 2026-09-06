@@ -1,4 +1,7 @@
-# Industrial & Automotive Protocols — Tools
+# Industrial & Automotive Protocols — Manual Pages
+
+Grouped by protocol rather than by command — each section lists the CLI and
+GUI clients that speak it.
 
 ## Modbus
 | Tool | Purpose |

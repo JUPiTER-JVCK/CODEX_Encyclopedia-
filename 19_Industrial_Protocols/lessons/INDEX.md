@@ -1,11 +1,10 @@
+# Industrial & Automotive Protocols — Lessons
 
 ## Dedicated Lesson Modules
 
 | File | Covers |
 |------|--------|
 | [Industrial Protocols — Interactive Labs](./industrial_labs.md) | Modbus TCP, OPC UA browse, CAN monitor, MQTT pub/sub |
-
-# Industrial & Automotive Protocols — Lessons
 
 ## Industrial / OT
 1. **Modbus RTU on RS-485** — single master + 2 slaves on a USB-to-RS485 dongle; read holding regs.

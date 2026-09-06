@@ -1,4 +1,7 @@
-# Embedded Systems — Topics (roadmap index)
+# Embedded Systems — Topics
+
+Indexed against the *Embedded Systems Engineering Roadmap*, the same source
+the lessons ladder follows.
 
 ## Embedded Linux specifics
 - **Kernel** — pre-built vs custom build; defconfig per board

@@ -1,4 +1,7 @@
-# System Libraries — Protocols & Standards
+# System Libraries — Protocols
+
+Language, API and ABI standards rather than wire protocols — the contracts a
+library has to keep.
 
 | Standard | What it pins |
 |----------|--------------|

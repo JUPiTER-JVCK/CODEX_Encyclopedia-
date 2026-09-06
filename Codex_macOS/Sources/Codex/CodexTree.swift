@@ -21,16 +21,6 @@ final class CodexNode: Identifiable, Hashable {
 
     static func == (lhs: CodexNode, rhs: CodexNode) -> Bool { lhs.id == rhs.id }
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
-
-    /// Display title preferring the file's first H1 heading, falling back to
-    /// the filename.
-    ///
-    /// The tab strip asks for this on every render, so the read goes through
-    /// `DocumentStore`'s title cache rather than hitting the disk each time.
-    func displayTitle() -> String {
-        guard let url = url, isFile else { return label }
-        return DocumentStore.title(for: url) ?? label
-    }
 }
 
 enum NodeKind {
@@ -99,7 +89,7 @@ enum CodexTree {
         "references": "References",
         "lessons":    "Lessons",
         "languages":  "Languages",
-        "man_pages":  "Man Pages",
+        "man_pages":  "Manual Pages",
         "topics":     "Topics",
         "protocols":  "Protocols",
     ]
@@ -176,9 +166,21 @@ enum CodexTree {
         return out
     }
 
-    /// Cleanup filename for display in the sidebar.
+    /// The name to show where there is no surrounding context — the command
+    /// palette, the tab strip, recents. Prefers the file's first H1, which for
+    /// a section index reads "Circuit Board — Languages" rather than the
+    /// "Overview" the sidebar wants, since 138 rows of "Overview" name nothing.
+    ///
+    /// Goes through `DocumentStore`'s title cache (keyed on path, mtime and
+    /// size), so a palette redrawing on every keystroke is not re-reading files.
+    static func fullTitle(for url: URL) -> String {
+        DocumentStore.title(for: url) ?? prettyFilename(url.lastPathComponent)
+    }
+
+    /// Cleanup filename for display in the sidebar, where the layer and section
+    /// above a row already say what it is.
     static func prettyFilename(_ name: String) -> String {
-        if name == "INDEX.md" { return "Index" }
+        if name == "INDEX.md" { return "Overview" }
         var s = name
         if s.hasSuffix(".md") { s.removeLast(3) }
         s = s.replacingOccurrences(of: "_", with: " ")

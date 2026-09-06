@@ -1,11 +1,10 @@
+# Firmware / BIOS — Topics
 
 ## Dedicated Topic Deep Dives
 
 | File | Covers |
 |------|--------|
 | [UEFI Boot Flow](./uefi_boot_flow.md) | SEC→PEI→DXE→BDS, GPT, Secure Boot chain |
-
-# Firmware / BIOS — Topics
 
 ## Boot flow
 - **x86 reset vector** — `0xFFFFFFF0` real mode → protected → long mode.

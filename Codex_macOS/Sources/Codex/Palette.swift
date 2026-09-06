@@ -128,7 +128,7 @@ private struct ResultRow: View {
                     .foregroundColor(isSelected ? Theme.accent : Theme.overlay1)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(CodexTree.prettyFilename(rank.display))
+                Text(CodexTree.fullTitle(for: rank.url))
                     .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
                     .foregroundColor(isSelected ? Theme.text : Theme.subtext)
                 if !rank.parent.isEmpty {

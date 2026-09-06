@@ -1,4 +1,4 @@
-# Circuit Board — Protocols (Buses & Interconnect)
+# Circuit Board — Protocols
 
 Physical/electrical bus protocols that live on the board.
 

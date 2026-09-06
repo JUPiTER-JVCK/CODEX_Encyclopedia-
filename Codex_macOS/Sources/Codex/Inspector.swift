@@ -246,7 +246,7 @@ private struct RecentRow: View {
                     .font(.system(size: 11))
                     .foregroundColor(Theme.overlay1)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(CodexTree.prettyFilename(url.lastPathComponent))
+                    Text(CodexTree.fullTitle(for: url))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(Theme.text)
                         .lineLimit(1)

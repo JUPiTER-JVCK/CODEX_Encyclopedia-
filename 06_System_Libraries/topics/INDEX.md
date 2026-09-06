@@ -1,11 +1,10 @@
+# System Libraries — Topics
 
 ## Dedicated Topic Deep Dives
 
 | File | Covers |
 |------|--------|
 | [libc Variants](./libc_variants.md) | glibc, musl, Bionic, uClibc, newlib |
-
-# System Libraries — Topics
 
 ## libc anatomy
 - **Headers** — `stdio.h`, `stdlib.h`, `string.h`, `unistd.h`, `pthread.h`, ...

@@ -1,4 +1,4 @@
-# Physics — Laws, Units, Constants
+# Physics — Protocols
 
 Physics has *laws*, not protocols. This section collects the standard formal
 statements you'll cross-reference everywhere.
