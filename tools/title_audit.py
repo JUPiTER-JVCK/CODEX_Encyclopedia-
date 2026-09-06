@@ -6,7 +6,7 @@ point. The macOS app shows the first H1 of a file wherever it needs a name, so
 these headings are what a reader sees in the command palette, the tab strip and
 the recents list — flat lists with no surrounding path to give them context.
 
-That makes three things faults rather than blemishes:
+That makes four things faults rather than blemishes:
 
   BAD TITLE      H1 is not "<Layer> — <Section>" with a canonical section name
   BURIED TITLE   content sits above the H1, so the file opens on something else
@@ -46,7 +46,12 @@ EM_DASH = "—"
 
 
 def read_lines(path: str) -> list[str]:
-    return open(path, encoding="utf-8").read().split("\n")
+    # Split on "\n" rather than splitlines(): this reports line numbers a
+    # person then looks up in an editor, and splitlines() also breaks on
+    # \v, \f and U+2028, which no editor treats as a line end. Text mode
+    # already folds \r\n and \r to \n, so CRLF needs nothing extra.
+    with open(path, encoding="utf-8") as fh:
+        return fh.read().split("\n")
 
 
 def audit_file(path: str, section: str) -> list[tuple[str, str]]:
@@ -131,13 +136,21 @@ def main() -> int:
         if len(names) < 2:
             continue
         # The spelling used by most of the layer's indexes is the right one.
-        winner = max(names, key=lambda n: len(names[n]))
+        # Iterate sorted so a tie resolves the same way everywhere: without
+        # it the winner falls out of os.walk order, which is filesystem
+        # dependent, and a 3-3 split across six indexes would name a
+        # different file as the offender on a different machine.
+        winner = max(sorted(names), key=lambda n: len(names[n]))
+        tied = sum(1 for n in names if len(names[n]) == len(names[winner])) > 1
         for name, files in sorted(names.items()):
             if name == winner:
                 continue
+            # On a tie neither spelling is the majority, so say so rather
+            # than presenting an arbitrary pick as the established one.
+            note = ("no majority — this layer is split, pick one"
+                    if tied else f"this layer uses {winner!r}")
             for rel in files:
-                drift.append((rel, "LAYER DRIFT",
-                              f"{name!r} but this layer uses {winner!r}"))
+                drift.append((rel, "LAYER DRIFT", f"{name!r} but {note}"))
 
     faults.extend(drift)
     faults.sort()
