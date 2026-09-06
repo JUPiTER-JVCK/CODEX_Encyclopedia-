@@ -219,8 +219,11 @@ python3 tools/table_audit.py
 cd Codex_LMS
 npm ci && npm run build
 npm run preview -- --port 4173 &
-until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done
-npm run smoke -- http://localhost:4173/
+for i in $(seq 1 30); do
+  curl -sf -o /dev/null http://localhost:4173/ && break
+  sleep 1
+done
+curl -sf -o /dev/null http://localhost:4173/ && npm run smoke -- http://localhost:4173/
 cd ..
 
 # macOS app — needs a Mac with the Xcode command-line tools
