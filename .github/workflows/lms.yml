@@ -52,14 +52,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # Same script the READMEs tell you to run, so CI and the documented
+      # command cannot drift — they already had, once.
       - name: Serve and smoke test
-        run: |
-          npm run preview -- --port 4173 &
-          for i in $(seq 1 30); do
-            curl -sf -o /dev/null http://localhost:4173/ && break
-            sleep 1
-          done
-          curl -sf -o /dev/null http://localhost:4173/ || {
-            echo "preview server never came up"; exit 1;
-          }
-          npm run smoke -- http://localhost:4173/
+        run: npm run smoke:local

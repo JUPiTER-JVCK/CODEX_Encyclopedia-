@@ -82,9 +82,10 @@ Full feature list and source layout: [`Codex_macOS/README.md`](Codex_macOS/READM
 
 ## Running CORE
 
-Requires Node 20.19+ or 22.12+ — what Vite 8 declares in its `engines`, and
-what `Codex_LMS/package.json` now enforces so npm warns instead of failing
-mid-install.
+Requires Node 20.19+ or 22.12+ — what Vite 8 declares in its `engines`.
+`Codex_LMS/package.json` repeats that floor and `.npmrc` sets
+`engine-strict=true`, so an unsupported Node fails the install with a clear
+message instead of only warning and breaking later.
 
 ```sh
 cd Codex_LMS
@@ -212,15 +213,11 @@ The same checks run locally:
 python3 tools/link_audit.py
 python3 tools/table_audit.py
 
-# LMS — build, then smoke-test against a running preview server.
-# The wait loop matters: `npm run preview &` returns before the server is
-# listening, so without it the smoke test races the startup and fails on a
-# working app.
+# LMS — build, then smoke-test. `smoke:local` starts the preview server,
+# waits (bounded) for it to actually listen, runs the test, and cleans up.
 cd Codex_LMS
 npm ci && npm run build
-npm run preview -- --port 4173 &
-until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done
-npm run smoke -- http://localhost:4173/
+npm run smoke:local
 cd ..
 
 # macOS app — needs a Mac with the Xcode command-line tools
@@ -235,5 +232,5 @@ skipping code spans so syntax examples aren't counted, and exit non-zero on a
 breakage. Currently:
 
 - 274 markdown files
-- 1006 internal links, 0 broken
+- 1009 internal links, 0 broken
 - Every file carries an H1, every pipe table well-formed

@@ -111,14 +111,33 @@ It expects a server already running (`npm run preview`) and takes the URL as
 its first argument, defaulting to `http://localhost:4173/`:
 
 ```sh
-npm run preview -- --port 4173 &
-until curl -sf -o /dev/null http://localhost:4173/; do sleep 1; done
-npm run smoke -- http://localhost:4173/
+npm run smoke:local
 ```
 
-`npm run preview &` returns as soon as the process starts, not when it is
-listening, so the wait loop is what stops the smoke test racing startup and
-failing against a perfectly good build. CI uses the same loop.
+That wraps the whole dance: it starts the preview server, waits for it to
+actually listen, runs the test, and kills the server on the way out. `PORT`
+and `TIMEOUT` override the defaults (4173, 30s).
+
+The wait is the point. `npm run preview &` returns as soon as the process
+starts, not when it is listening, so without it the test races startup and
+fails against a perfectly good build. The wait is also *bounded* — an
+unbounded `until curl` hangs forever on a port conflict, giving no clue why.
+On timeout the script prints the server's output and exits non-zero.
+
+Two failure modes it refuses rather than reports green: a server already on
+the port (the test would pass against whatever *that* is serving), and a
+server that binds but 404s, which is what `vite preview` does when `dist/` is
+missing or stale. Cleanup kills the whole process group — `npm run preview`
+forks vite as a child, so killing only npm leaves vite holding the port, and
+the next run would smoke-test the stale bundle and pass.
+
+CI runs the same script, so the two cannot drift.
+
+To point the test at a server you are already running, call it directly:
+
+```sh
+npm run smoke -- http://localhost:4173/
+```
 
 It finds Chromium on its own: whatever `npx playwright install chromium`
 put in place, falling back to a pre-provisioned binary at
