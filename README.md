@@ -83,8 +83,8 @@ Full feature list and source layout: [`Codex_macOS/README.md`](Codex_macOS/READM
 ## Running CORE
 
 Requires Node 20.19+ or 22.12+ — what Vite 8 declares in its `engines`, and
-what `Codex_LMS/package.json` now enforces so npm warns instead of failing
-mid-install.
+what `Codex_LMS/package.json` now declares so npm warns early instead of failing
+mid-install on an unsupported runtime.
 
 ```sh
 cd Codex_LMS
