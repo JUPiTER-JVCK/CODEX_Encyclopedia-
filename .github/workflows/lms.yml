@@ -1,0 +1,58 @@
+name: LMS
+
+# Builds CORE and drives it through a real browser. The smoke test is the
+# one that matters: it asserts progress survives a reload, which is the bug
+# that made the app silently forget everything outside a Claude artifact.
+
+# No path filters. A required status check that never runs leaves a pull
+# request permanently unmergeable, so this runs on every PR — a wasted
+# minute on a docs-only change costs far less than a merge that can never
+# complete.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lms-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: Codex_LMS
+
+jobs:
+  build:
+    name: build + smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Codex_LMS/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Same script the READMEs tell you to run, so CI and the documented
+      # command cannot drift — they already had, once.
+      - name: Serve and smoke test
+        run: npm run smoke:local

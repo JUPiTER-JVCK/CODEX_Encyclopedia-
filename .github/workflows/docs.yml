@@ -1,0 +1,41 @@
+name: Docs
+
+# Wires up the two audit scripts that already exist. Both exit non-zero on a
+# failure, so they were always meant to gate — they just had nothing calling
+# them except a human remembering to.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: link + table audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Every relative link resolves, and every file carries an H1.
+      - name: Link audit
+        run: python3 tools/link_audit.py
+
+      # Every pipe table has a header, and header/separator/rows agree on
+      # column count. This is what caught the five protocol INDEX.md files
+      # whose headers were clobbered by a bulk edit.
+      - name: Table audit
+        run: python3 tools/table_audit.py
