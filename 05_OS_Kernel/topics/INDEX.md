@@ -1,11 +1,10 @@
+# OS Kernel — Topics
 
 ## Dedicated Topic Deep Dives
 
 | File | Covers |
 |------|--------|
 | [Virtual Memory](./virtual_memory.md) | Page tables, TLB, mmap, huge pages, ASLR |
-
-# OS Kernel — Topics
 
 ## Process & scheduling
 - **Process / thread model** — `task_struct`, fork/clone/exec, exit/wait.

@@ -1,4 +1,6 @@
-# Analog Circuits — Tools
+# Analog Circuits — Manual Pages
+
+Simulation and bench tooling rather than system utilities.
 
 ## Simulation
 | Tool | Purpose |

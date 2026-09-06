@@ -1,4 +1,7 @@
-# User Applications — Protocols & App-Level Standards
+# User Applications — Protocols
+
+Application-level conventions — clipboard, drag-and-drop, MIME and URL schemes
+— rather than anything that travels on the wire.
 
 ## Inter-app & integration
 | Protocol / spec | Purpose |

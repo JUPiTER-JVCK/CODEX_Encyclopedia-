@@ -1,11 +1,10 @@
+# Runtime Environment — Topics
 
 ## Dedicated Topic Deep Dives
 
 | File | Covers |
 |------|--------|
 | [Container Internals](./container_internals.md) | Namespaces, cgroups v2, overlayfs, seccomp |
-
-# Runtime Environment — Topics
 
 ## Execution models
 - **Interpretation** — bytecode walk (CPython, MRI Ruby).

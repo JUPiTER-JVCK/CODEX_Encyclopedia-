@@ -1,11 +1,10 @@
+# AI / ML — Lessons
 
 ## Dedicated Lesson Modules
 
 | File | Covers |
 |------|--------|
 | [AI/ML — Interactive Labs](./ml_labs.md) | PyTorch MNIST, attention visualization, ONNX export |
-
-# AI / ML — Lessons
 
 ## Foundations
 1. **Linear algebra refresher** — vectors, matrices, eigenvalues, SVD, autograd intuition.

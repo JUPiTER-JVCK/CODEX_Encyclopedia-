@@ -75,8 +75,6 @@ private struct TabPill: View {
     }
 
     private var displayName: String {
-        let name = url.lastPathComponent
-        if name == "INDEX.md" { return url.deletingLastPathComponent().lastPathComponent.capitalized + " · Index" }
-        return CodexTree.prettyFilename(name)
+        CodexTree.fullTitle(for: url)
     }
 }

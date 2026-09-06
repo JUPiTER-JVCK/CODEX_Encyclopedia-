@@ -1,3 +1,4 @@
+# Algorithms & DSA — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Algorithms & DSA — Interactive Labs](./dsa_labs.md) | Big-O measurement, binary search, graph BFS/DFS, DP |
 
-# Algorithms & DSA — Lessons
+## Lesson ladder
 
 Ordered ladder. Goal: complete one bucket per week, write a notes file after each.
 

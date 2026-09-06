@@ -1,4 +1,7 @@
-# Devices — Standards & Conventions
+# Devices — Protocols
+
+Packaging, reliability and handling standards rather than wire protocols —
+what a physical device must conform to.
 
 ## Packaging
 | Standard | Owner | Scope |

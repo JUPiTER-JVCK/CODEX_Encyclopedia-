@@ -1,4 +1,7 @@
-# Devices — Tools
+# Devices — Manual Pages
+
+SPICE simulators and PCB tools, several of them GUI applications rather than
+commands with a man page.
 
 | Tool | Purpose |
 |------|---------|

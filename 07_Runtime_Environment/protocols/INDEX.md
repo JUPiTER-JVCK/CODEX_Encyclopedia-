@@ -1,12 +1,4 @@
----
-title: "Runtime Environment — Protocol Reference"
-layer: 07_Runtime_Environment
-section: protocols
-tags: [protocols, index, reference]
-updated: 2026-06-07
----
-
-# Runtime Environment — Protocol Reference
+# Runtime Environment — Protocols
 
 > OCI image/runtime/distribution specifications and adjacent runtime standards.
 

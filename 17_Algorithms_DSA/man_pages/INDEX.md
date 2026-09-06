@@ -1,4 +1,7 @@
-# Algorithms & DSA — Tools
+# Algorithms & DSA — Manual Pages
+
+Practice tooling rather than system utilities — CLIs and editor extensions for
+working problems locally.
 
 ## Local practice
 | Tool | Purpose |

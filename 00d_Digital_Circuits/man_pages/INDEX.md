@@ -1,4 +1,7 @@
-# Digital Circuits — Tools
+# Digital Circuits — Manual Pages
+
+HDL toolchain commands — simulators, synthesis and place-and-route — rather
+than system utilities.
 
 ## Open-source HDL flow
 | Command | Purpose |

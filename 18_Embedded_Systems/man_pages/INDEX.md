@@ -1,4 +1,4 @@
-# Embedded Systems — Tools
+# Embedded Systems — Manual Pages
 
 ## Dedicated man page references
 

@@ -1,8 +1,8 @@
 name: Docs
 
-# Wires up the two audit scripts that already exist. Both exit non-zero on a
-# failure, so they were always meant to gate — they just had nothing calling
-# them except a human remembering to.
+# Wires up the audit scripts. All three exit non-zero on a failure, so they
+# were always meant to gate — they just had nothing calling them except a
+# human remembering to.
 
 on:
   pull_request:
@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   audit:
-    name: link + table audit
+    name: docs audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -39,3 +39,9 @@ jobs:
       # whose headers were clobbered by a bulk edit.
       - name: Table audit
         run: python3 tools/table_audit.py
+
+      # Every section INDEX.md is titled "<Layer> — <Section>" with the H1
+      # first in the file and no frontmatter. All three faults arrived via
+      # bulk edits, which is why this is a script and not a convention.
+      - name: Title audit
+        run: python3 tools/title_audit.py

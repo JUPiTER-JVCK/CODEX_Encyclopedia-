@@ -213,7 +213,7 @@ private struct RecentCard: View {
                     .font(.system(size: 18))
                     .foregroundColor(Theme.blue)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(CodexTree.prettyFilename(url.lastPathComponent))
+                    Text(CodexTree.fullTitle(for: url))
                         .font(Theme.FontStyle.headline)
                         .foregroundColor(Theme.text)
                         .lineLimit(1)

@@ -935,7 +935,7 @@ private struct AdjacentCard: View {
                                 .font(.system(size: 10, weight: .semibold))
                                 .tracking(0.6)
                                 .foregroundColor(Theme.overlay1)
-                            Text(CodexTree.prettyFilename(url.lastPathComponent))
+                            Text(CodexTree.fullTitle(for: url))
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundColor(Theme.text)
                                 .lineLimit(1)

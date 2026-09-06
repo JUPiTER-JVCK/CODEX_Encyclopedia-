@@ -1,12 +1,4 @@
----
-title: "Embedded Systems — Protocol Reference"
-layer: 18_Embedded_Systems
-section: protocols
-tags: [protocols, index, reference]
-updated: 2026-06-07
----
-
-# Embedded Systems — Protocol Reference
+# Embedded Systems — Protocols
 
 > On-chip and on-board buses: I²C, SPI, UART, CAN.
 

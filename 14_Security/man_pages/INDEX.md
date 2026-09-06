@@ -1,4 +1,4 @@
-# Security — Manual Pages / Tools
+# Security — Manual Pages
 
 ## Dedicated man page references
 

@@ -1,3 +1,4 @@
+# Network Physical — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Network Physical — Interactive Labs](./physical_labs.md) | Cable testing, ethtool diagnostics, Wi-Fi signal survey |
 
-# Network Physical — Lessons
+## Lesson ladder
 
 1. **Terminate a Cat6 cable** — T568A vs T568B, RJ45 crimp, certify.
 2. **Test cable with a tester** — Fluke or budget equivalent: length, wiremap, NEXT.

@@ -1,4 +1,4 @@
-# Network Application — Protocols (the big table)
+# Network Application — Protocols
 
 ## Dedicated protocol references
 

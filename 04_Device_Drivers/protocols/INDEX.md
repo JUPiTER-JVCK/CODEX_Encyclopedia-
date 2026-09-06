@@ -1,4 +1,4 @@
-# Device Drivers — Protocols & APIs
+# Device Drivers — Protocols
 
 Not wire protocols — driver↔OS contracts and stable userspace ABIs.
 

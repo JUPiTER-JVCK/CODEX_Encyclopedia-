@@ -1,3 +1,4 @@
+# Network Data Link — Lessons
 
 ## Dedicated Lesson Modules
 
@@ -5,7 +6,7 @@
 |------|--------|
 | [Network Data Link — Interactive Labs](./datalink_labs.md) | VLAN config, ARP cache observation, STP |
 
-# Network Data Link — Lessons
+## Lesson ladder
 
 1. **Read an Ethernet frame** — capture with `tcpdump -e`; decode preamble/SFD, MAC, EtherType, FCS.
 2. **Trace an ARP exchange** — `arping`, then full `who-has` and `is-at` in Wireshark.

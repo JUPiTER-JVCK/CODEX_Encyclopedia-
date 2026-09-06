@@ -1,4 +1,4 @@
-# Algorithms & DSA — Process Protocols
+# Algorithms & DSA — Protocols
 
 Not network protocols — these are the *conventions* of the algorithmic
 interview / competition process.

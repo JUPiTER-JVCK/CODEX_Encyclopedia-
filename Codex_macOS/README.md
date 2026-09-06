@@ -126,8 +126,16 @@ Codex_macOS/
 
 ## Known issues
 
-Found by inspection. None of it has been compiler-verified against a recent
-SDK — there is no Swift toolchain in the environment these were written in.
+Found by inspection. `swift.yml` now answers "does it compile" on every PR,
+but nothing exercises the UI, so anything about how a thing *looks* is still
+unverified.
+
+**Not verified on a Mac.** Section indexes now take their name from the
+file's first H1 in the command palette, tab strip, recents and inspector, and
+read `Overview` in the sidebar, where the layer and section above the row
+already give the context. That the result reads well — and that a long title
+like `Industrial & Automotive Protocols — Protocols` does not overflow a
+200pt tab — has only been reasoned about, not seen.
 
 **Smaller.**
 

@@ -48,9 +48,12 @@ and `README.md` are navigation, and their heading plus intro line already say
 what they are. Root documents (`LAYERS.md`, `STRUCTURE.md`, `CHANGELOG.md`)
 are likewise exempt.
 
-That split is what the tree actually looks like: 110 notes carry frontmatter,
-and the 164 files without it are entry points and root documents. A note that
+That split is what the tree actually looks like: 105 notes carry frontmatter,
+and the 169 files without it are entry points and root documents. A note that
 teaches something needs the metadata; a file that lists links does not.
+
+`tools/title_audit.py` enforces the exemption — five `protocols/INDEX.md`
+files had picked up frontmatter from a bulk edit before it existed.
 
 A content note opens like this:
 
@@ -70,8 +73,41 @@ related:
 Required: `title`, `layer`, `section`, `tags`, `updated`.
 Optional: `related`, `source`, `confidence`, `status`.
 
-Every file carries an H1 heading, frontmatter or not — the macOS app uses
-the first H1 for tab titles, falling back to the filename.
+Every file carries an H1 heading, frontmatter or not, and it must be the
+first thing in the file. The macOS app shows that H1 wherever a name appears
+without surrounding context — the command palette, the tab strip, recents and
+the inspector — so a heading buried under a prepended block leaves the file
+effectively unnamed in all four.
+
+## Section index titles
+
+Every `INDEX.md` in a sub-section folder is titled:
+
+```
+# <Layer> — <Section>
+```
+
+with an em dash, and `<Section>` taken from this fixed set:
+
+| Folder | Section name |
+|--------|--------------|
+| `references/` | References |
+| `lessons/` | Lessons |
+| `languages/` | Languages |
+| `man_pages/` | Manual Pages |
+| `topics/` | Topics |
+| `protocols/` | Protocols |
+
+The layer name is spelled the same way across all six of a layer's indexes.
+
+The pattern exists because these 138 headings are what the palette lists: a
+qualifier like *(the big table)* or a synonym like *Tools* for `man_pages/`
+makes the set unsearchable by section. **Qualifiers belong in the intro line
+below the heading, not in it** — several carried real information (`Physics —
+Laws, Units, Constants` meant the layer has laws, not protocols), and that
+sentence moved down rather than being dropped.
+
+`tools/title_audit.py` checks all of this and gates in CI.
 
 ## Sub-sections
 

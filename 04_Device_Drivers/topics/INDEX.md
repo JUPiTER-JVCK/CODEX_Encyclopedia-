@@ -1,11 +1,10 @@
+# Device Drivers — Topics
 
 ## Dedicated Topic Deep Dives
 
 | File | Covers |
 |------|--------|
 | [Linux Driver Model](./driver_model.md) | Bus/device/driver binding, DT/ACPI, udev |
-
-# Device Drivers — Topics
 
 ## Driver classes
 - **Character drivers** — byte-stream devices (`/dev/tty*`, `/dev/random`)

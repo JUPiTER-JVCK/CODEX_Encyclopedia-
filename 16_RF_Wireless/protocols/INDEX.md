@@ -1,12 +1,4 @@
----
-title: "RF & Wireless — Protocol Reference"
-layer: 16_RF_Wireless
-section: protocols
-tags: [protocols, index, reference]
-updated: 2026-06-07
----
-
-# RF & Wireless — Protocol Reference
+# RF / Wireless — Protocols
 
 > Wi-Fi, Bluetooth, cellular, LPWAN, GNSS, broadcast, amateur digital.
 
