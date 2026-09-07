@@ -344,6 +344,333 @@ const GATE_REF = [
   { g: "XNOR", desc: "Exclusive NOR — output is 1 if the inputs are the SAME as each other." },
 ];
 
+/* ═══════════════ REUSABLE INTERACTIVE PRIMITIVES ═══════════════ */
+/* Four shapes cover most of what a topic needs to show. Each is driven by
+   data declared beside the topic that uses it, so giving a topic something
+   to manipulate is a data change rather than another bespoke component.
+   Where a topic needs a genuinely custom visual it still gets one. */
+
+const wCard = (t) => ({ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 18, padding: 26, margin: "24px 0" });
+const wEyebrow = (t) => ({ fontFamily: F_MONO, fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", color: t.accent, marginBottom: 14 });
+const wNote = (t) => ({ fontSize: 13, color: t.textMuted, fontFamily: F_BODY, lineHeight: 1.7, marginTop: 16 });
+const wBtn = (t, on) => ({ background: on ? t.accent : t.surfaceAlt, color: on ? "#fff" : t.textSecondary, border: `1px solid ${on ? t.accent : t.border}`, borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: F_MONO });
+
+/* ── StepThrough — walk a process one phase at a time ── */
+function StepThrough({ name, steps, note }) {
+  const { t, view } = useT();
+  const [i, setI] = useState(0);
+  const s = steps[i];
+  const last = steps.length - 1;
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · {name}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
+        {steps.map((st, k) => (
+          <button key={k} onClick={() => setI(k)} title={st.label} style={wBtn(t, k === i)}>{k + 1}</button>
+        ))}
+      </div>
+      <div style={{ background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: 18 }}>
+        <div style={{ fontFamily: F_MONO, fontSize: 13, fontWeight: 700, color: t.accent, marginBottom: 8 }}>{i + 1}. {s.label}</div>
+        <div style={{ color: t.textSecondary, fontSize: 14.5, lineHeight: 1.75, fontFamily: F_BODY }}>{s.detail}</div>
+        {s.state && (
+          <div style={{ display: "grid", gridTemplateColumns: view === "mobile" ? "1fr" : "repeat(auto-fit,minmax(150px,1fr))", gap: 10, marginTop: 16 }}>
+            {s.state.map(([k, v]) => (
+              <div key={k} style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 9, padding: "9px 12px" }}>
+                <div style={{ fontFamily: F_MONO, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted }}>{k}</div>
+                <div style={{ fontFamily: F_MONO, fontSize: 13.5, color: t.text, marginTop: 3, wordBreak: "break-word" }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 14, alignItems: "center" }}>
+        <button onClick={() => setI(Math.max(0, i - 1))} style={{ ...wBtn(t, false), opacity: i === 0 ? 0.4 : 1, cursor: i === 0 ? "default" : "pointer" }}>◀ Prev</button>
+        <button onClick={() => setI(Math.min(last, i + 1))} style={{ ...wBtn(t, i < last), opacity: i === last ? 0.4 : 1, cursor: i === last ? "default" : "pointer" }}>Next ▶</button>
+        <span style={{ fontFamily: F_MONO, fontSize: 12, color: t.textMuted, marginLeft: 4 }}>{i + 1} / {steps.length}</span>
+      </div>
+      {note && <div style={wNote(t)}>{note}</div>}
+    </div>
+  );
+}
+
+/* ── CompareGrid — hold one dimension still and read down it ── */
+function CompareGrid({ name, headers, rows, note }) {
+  const { t } = useT();
+  const [col, setCol] = useState(1);
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · {name}</div>
+      <div style={{ fontSize: 12.5, color: t.textMuted, fontFamily: F_BODY, marginBottom: 12 }}>
+        Click a column to compare that one dimension across every row.
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13 }}>
+          <thead>
+            <tr>
+              {headers.map((h, k) => (
+                <th key={k} onClick={() => k && setCol(k)} style={{ textAlign: "left", padding: "9px 12px", fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.8, color: k === col ? t.accent : t.textMuted, borderBottom: `2px solid ${k === col ? t.accent : t.border}`, cursor: k ? "pointer" : "default", whiteSpace: "nowrap" }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r, ri) => (
+              <tr key={ri}>
+                {r.map((cell, ci) => (
+                  <td key={ci} style={{ padding: "9px 12px", borderBottom: `1px solid ${t.border}`, color: ci === 0 || ci === col ? t.text : t.textMuted, fontWeight: ci === 0 || ci === col ? 600 : 400, background: ci === col ? t.accentSoft : "transparent", fontFamily: ci === 0 ? F_MONO : F_BODY, opacity: ci === 0 || ci === col ? 1 : 0.5, verticalAlign: "top" }}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {note && <div style={wNote(t)}>{note}</div>}
+    </div>
+  );
+}
+
+/* ── TreeExplorer — expand a nested structure, inspect one node ── */
+function TreeExplorer({ name, root, note, hint }) {
+  const { t, view } = useT();
+  const [open, setOpen] = useState(() => new Set(["0"]));
+  const [selId, setSelId] = useState("0");
+  const toggle = (id) => setOpen((s) => { const n = new Set(s); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+
+  const find = (node, id, want) => {
+    if (id === want) return node;
+    for (let i = 0; i < (node.children || []).length; i++) {
+      const hit = find(node.children[i], `${id}.${i}`, want);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const sel = find(root, "0", selId) || root;
+
+  const row = (node, id, depth) => {
+    const kids = node.children || [];
+    const isOpen = open.has(id);
+    return (
+      <div key={id}>
+        <div onClick={() => { setSelId(id); if (kids.length) toggle(id); }}
+          style={{ display: "flex", gap: 8, alignItems: "center", padding: "5px 8px", paddingLeft: 8 + depth * 18, borderRadius: 7, cursor: "pointer", background: id === selId ? t.accentSoft : "transparent", fontFamily: F_MONO, fontSize: 13 }}>
+          <span style={{ color: t.textMuted, width: 10, flexShrink: 0 }}>{kids.length ? (isOpen ? "▾" : "▸") : "·"}</span>
+          <span style={{ color: node.kind === "text" ? t.green : t.blue }}>{node.label}</span>
+        </div>
+        {isOpen && kids.map((c, i) => row(c, `${id}.${i}`, depth + 1))}
+      </div>
+    );
+  };
+
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · {name}</div>
+      {hint && <div style={{ fontSize: 12.5, color: t.textMuted, fontFamily: F_BODY, marginBottom: 12 }}>{hint}</div>}
+      <div style={{ display: "grid", gridTemplateColumns: view === "mobile" ? "1fr" : "1fr 1fr", gap: 16 }}>
+        <div style={{ background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: 12, overflowX: "auto" }}>{row(root, "0", 0)}</div>
+        <div style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 13, fontWeight: 700, color: t.accent }}>{sel.label}</div>
+          <div style={{ fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted, margin: "4px 0 10px" }}>{sel.kind || "node"}</div>
+          <div style={{ color: t.textSecondary, fontSize: 14, lineHeight: 1.7, fontFamily: F_BODY }}>{sel.detail}</div>
+        </div>
+      </div>
+      {note && <div style={wNote(t)}>{note}</div>}
+    </div>
+  );
+}
+
+/* ── TruthTableBuilder — pick an expression, read every case ── */
+function TruthTableBuilder({ name, exprs, note }) {
+  const { t } = useT();
+  const [i, setI] = useState(0);
+  const e = exprs[i];
+  const n = e.vars.length;
+  const rows = [];
+  for (let m = 0; m < (1 << n); m++) {
+    const vals = e.vars.map((_, k) => (m >> (n - 1 - k)) & 1);
+    rows.push([...vals, e.fn(...vals) ? 1 : 0]);
+  }
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · {name}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+        {exprs.map((x, k) => (
+          <button key={k} onClick={() => setI(k)} style={wBtn(t, k === i)}>{x.label}</button>
+        ))}
+      </div>
+      <TruthTable cols={[...e.vars, "OUT"]} rows={rows} />
+      {e.note && <div style={wNote(t)}>{e.note}</div>}
+      {note && <div style={wNote(t)}>{note}</div>}
+    </div>
+  );
+}
+
+/* ── Data for the reusable primitives, one entry per topic that uses one ── */
+
+const TT_BOOLEAN = [
+  { label: "A · B", vars: ["A", "B"], fn: (a, b) => a && b, note: "AND — true only when both inputs are true. The strictest of the three basic operators." },
+  { label: "A + B", vars: ["A", "B"], fn: (a, b) => a || b, note: "OR — true when at least one input is true. Note 1 + 1 = 1, not 2: this is logic, not arithmetic." },
+  { label: "¬A", vars: ["A"], fn: (a) => !a, note: "NOT — the only single-input operator. It just flips the value." },
+  { label: "A ⊕ B", vars: ["A", "B"], fn: (a, b) => !!(a ^ b), note: "XOR — true when the inputs DIFFER. This is the operator that adds two bits: 1 ⊕ 1 = 0, carry the 1." },
+  { label: "A → B", vars: ["A", "B"], fn: (a, b) => !a || !!b, note: "Implication — 'if A then B'. Surprising row: when A is false the whole thing is true, because a promise about a case that never happened was never broken." },
+];
+
+const TT_SIMPLIFY = [
+  { label: "A · (A + B)", vars: ["A", "B"], fn: (a, b) => a && (a || b), note: "Absorption. Compare this OUT column with plain A below — identical. The whole (A + B) term does nothing." },
+  { label: "A", vars: ["A", "B"], fn: (a) => !!a, note: "Same column as A · (A + B). Two gates and a wire eliminated, with no change in behaviour — that is what simplification buys." },
+  { label: "¬(A · B)", vars: ["A", "B"], fn: (a, b) => !(a && b), note: "De Morgan, left side: NOT of an AND." },
+  { label: "¬A + ¬B", vars: ["A", "B"], fn: (a, b) => !a || !b, note: "De Morgan, right side. Identical to ¬(A · B) — negation turns AND into OR. This is why NAND alone can build any circuit." },
+];
+
+const STEP_SEQUENTIAL = [
+  { label: "Clock low, D = 1", detail: "The D input is high, but a rising-edge flip-flop ignores its input while the clock is low. Q holds whatever it last captured.", state: [["CLK", "0 ▁"], ["D", "1"], ["Q", "0 (held)"]] },
+  { label: "Rising edge ↑", detail: "The clock transitions low → high. This instant is the only moment the flip-flop looks at D. It samples the 1.", state: [["CLK", "0→1 ↑"], ["D", "1"], ["Q", "1 (captured)"]] },
+  { label: "Clock high, D changes to 0", detail: "D falls to 0 mid-cycle. Nothing happens — the edge has passed, so Q stays at 1. This is exactly what makes sequential logic predictable.", state: [["CLK", "1 ▔"], ["D", "0"], ["Q", "1 (held)"]] },
+  { label: "Falling edge ↓", detail: "Clock goes high → low. A rising-edge device ignores this too. Q is still 1.", state: [["CLK", "1→0 ↓"], ["D", "0"], ["Q", "1 (held)"]] },
+  { label: "Next rising edge ↑", detail: "Now D = 0 is sampled and Q finally changes. One bit of memory has survived a whole clock cycle — stack a few thousand of these and you have a register file.", state: [["CLK", "0→1 ↑"], ["D", "0"], ["Q", "0 (captured)"]] },
+];
+
+const STEP_INTERRUPTS = [
+  { label: "Running normal code", detail: "The CPU is executing your program. The keyboard controller has nothing to say yet.", state: [["PC", "0x4011a0"], ["Mode", "user"], ["IRQ line", "idle"]] },
+  { label: "Device asserts IRQ", detail: "A key is pressed. The controller raises its interrupt line. The CPU does not check for this in software — the signal arrives on a physical pin.", state: [["PC", "0x4011a4"], ["Mode", "user"], ["IRQ line", "asserted"]] },
+  { label: "CPU finishes the instruction", detail: "Interrupts are taken between instructions, never mid-instruction. The current one completes first, which is why interrupt latency has a floor.", state: [["PC", "0x4011a8"], ["Mode", "user"], ["IRQ line", "asserted"]] },
+  { label: "Save context, switch mode", detail: "The CPU pushes the program counter and flags, switches to kernel mode, and looks up the handler in the interrupt vector table.", state: [["PC", "→ vector"], ["Mode", "kernel"], ["Saved", "PC + flags"]] },
+  { label: "ISR runs", detail: "The interrupt service routine reads the scancode from the controller and acknowledges the device, which drops the IRQ line. Keep this short — interrupts may be masked while it runs.", state: [["PC", "isr_keyboard"], ["Mode", "kernel"], ["IRQ line", "cleared"]] },
+  { label: "Restore and return", detail: "IRET pops the saved flags and PC. Your program resumes at exactly the instruction it was going to run, with no idea anything happened.", state: [["PC", "0x4011a8"], ["Mode", "user"], ["IRQ line", "idle"]] },
+];
+
+const STEP_PAGELOAD = [
+  { label: "DNS resolution", detail: "The browser needs an IP address for the hostname. It checks its own cache, then the OS, then asks a resolver — which may walk from the root servers down.", state: [["Have", "hostname"], ["Want", "IP address"], ["Layer", "13 → 11"]] },
+  { label: "TCP handshake", detail: "SYN, SYN-ACK, ACK. One full round trip before a single byte of your request moves. This is why latency, not bandwidth, dominates page load on slow links.", state: [["Round trips", "1"], ["State", "ESTABLISHED"], ["Layer", "12"]] },
+  { label: "TLS handshake", detail: "Certificate exchange and key agreement. TLS 1.3 does this in one round trip; TLS 1.2 took two. Now the connection is encrypted.", state: [["Round trips", "2"], ["Cipher", "agreed"], ["Layer", "12 → 13"]] },
+  { label: "HTTP request and response", detail: "Finally the GET goes out and HTML comes back. Everything before this was setup.", state: [["Sent", "GET /"], ["Got", "200 + HTML"], ["Layer", "13"]] },
+  { label: "Parse and discover", detail: "The parser builds the DOM as bytes arrive, and every <link> and <script> it hits starts another fetch — often another DNS lookup and handshake on a new host.", state: [["DOM", "building"], ["New requests", "CSS, JS, fonts"], ["Blocking", "sync scripts"]] },
+  { label: "Style, layout, paint", detail: "CSSOM plus DOM makes the render tree; layout computes geometry; paint fills pixels. Only now does anything appear.", state: [["Render tree", "built"], ["First paint", "yes"], ["Layer", "08"]] },
+];
+
+const STEP_ROUTING = [
+  { label: "Host builds the packet", detail: "Destination 93.184.216.34 is not on the local subnet, so the host sends the frame to its default gateway — but the IP destination stays the final target.", state: [["Src IP", "192.168.1.50"], ["Dst IP", "93.184.216.34"], ["TTL", "64"]] },
+  { label: "Home router", detail: "First hop. It decrements TTL, rewrites the source address to its public IP (NAT), and forwards toward its upstream.", state: [["Hop", "1"], ["TTL", "63"], ["Src IP", "203.0.113.7 (NAT)"]] },
+  { label: "ISP core", detail: "A router with a full routing table picks the next hop by longest-prefix match — the most specific route that covers the destination wins.", state: [["Hop", "5"], ["TTL", "59"], ["Match", "93.184.216.0/24"]] },
+  { label: "Peering handoff", detail: "The packet crosses between autonomous systems. BGP decided this path, based on policy and AS-path length rather than raw speed.", state: [["Hop", "9"], ["TTL", "55"], ["Protocol", "BGP"]] },
+  { label: "Destination network", detail: "The last router sees the destination on a directly connected subnet, ARPs for the MAC, and delivers the frame.", state: [["Hop", "13"], ["TTL", "51"], ["Delivery", "local"]] },
+  { label: "Why TTL matters", detail: "Every hop decrements it. Hit zero and the packet is dropped and an ICMP Time Exceeded is returned — which is exactly how traceroute maps the path.", state: [["Started", "64"], ["Arrived", "51"], ["Hops used", "13"]] },
+];
+
+const STEP_OVERFLOW = [
+  { label: "Before input", detail: "A 16-byte buffer sits on the stack. Above it are the saved frame pointer and the return address the function will jump to when it finishes.", state: [["buf[16]", "uninitialised"], ["saved RBP", "0x7ffd…c0"], ["return addr", "0x401186"]] },
+  { label: "Safe input", detail: "Eight bytes copied in. Everything stays inside the buffer, and the return address is untouched.", state: [["buf[16]", "\"hello\\0\" …"], ["saved RBP", "0x7ffd…c0"], ["return addr", "0x401186"]] },
+  { label: "Input exactly fills it", detail: "Sixteen bytes. Still legal, but there is now no room for a terminating null — the first sign the size was never really checked.", state: [["buf[16]", "AAAAAAAAAAAAAAAA"], ["saved RBP", "0x7ffd…c0"], ["return addr", "0x401186"]] },
+  { label: "Overflow", detail: "Twenty-four bytes into a sixteen-byte buffer. strcpy does not know the size, so it keeps writing past the end and over the saved frame pointer.", state: [["buf[16]", "AAAAAAAAAAAAAAAA"], ["saved RBP", "AAAAAAAA ⚠"], ["return addr", "0x401186"]] },
+  { label: "Return address overwritten", detail: "Thirty-two bytes. The return address is now attacker-controlled. When the function returns, the CPU jumps wherever those bytes point.", state: [["buf[16]", "AAAAAAAAAAAAAAAA"], ["saved RBP", "AAAAAAAA"], ["return addr", "0x4141414141414141 ⚠"]] },
+  { label: "Why modern systems resist", detail: "Stack canaries detect the overwrite before returning, NX makes the stack non-executable, and ASLR randomises addresses. None of them fix the missing bounds check — they raise the cost.", state: [["Canary", "detects"], ["NX bit", "blocks exec"], ["ASLR", "randomises"]] },
+];
+
+const STEP_GIT = [
+  { label: "Working tree", detail: "You edit a file. Git sees it as modified but is not tracking the change for the next commit yet.", state: [["Working tree", "modified"], ["Index", "clean"], ["HEAD", "clean"]] },
+  { label: "git add", detail: "The change is copied into the index — the staging area. This is the step most other version control systems do not have, and it is what lets you commit part of your work.", state: [["Working tree", "modified"], ["Index", "staged"], ["HEAD", "clean"]] },
+  { label: "git commit", detail: "The index is written as a new commit object, pointing at its parent. Your branch pointer moves forward. Nothing has left your machine.", state: [["Working tree", "clean"], ["Index", "clean"], ["HEAD", "new commit"]] },
+  { label: "git push", detail: "The commit is sent to the remote and the remote branch pointer moves. Only now is the work anywhere but your disk.", state: [["Local", "in sync"], ["Remote", "updated"], ["Backed up", "yes"]] },
+  { label: "Where things go wrong", detail: "A commit you never pushed exists only on one disk. `git status` reports all three states at once — working tree, index, and how your branch compares to the remote.", state: [["Read", "git status"], ["Undo staging", "git restore --staged"], ["Undo commit", "git reset"]] },
+];
+
+const CG_STORAGE = {
+  headers: ["Tier", "Typical latency", "Typical size", "Volatile?", "Cost per GB"],
+  rows: [
+    ["Register", "~0.3 ns (1 cycle)", "a few hundred bytes", "yes", "—"],
+    ["L1 cache", "~1 ns (4 cycles)", "32–64 KB per core", "yes", "very high"],
+    ["L2 cache", "~4 ns (12 cycles)", "256 KB–2 MB per core", "yes", "high"],
+    ["L3 cache", "~15 ns (40 cycles)", "8–64 MB shared", "yes", "high"],
+    ["DRAM", "~80 ns (200+ cycles)", "8–128 GB", "yes", "moderate"],
+    ["NVMe SSD", "~50–100 µs", "0.5–8 TB", "no", "low"],
+    ["Hard disk", "~5–10 ms", "1–20 TB", "no", "very low"],
+  ],
+};
+
+const CG_PACKAGES = {
+  headers: ["Manager", "Install", "Search", "Remove", "Ecosystem"],
+  rows: [
+    ["apt", "apt install pkg", "apt search pkg", "apt remove pkg", "Debian, Ubuntu"],
+    ["dnf", "dnf install pkg", "dnf search pkg", "dnf remove pkg", "Fedora, RHEL"],
+    ["pacman", "pacman -S pkg", "pacman -Ss pkg", "pacman -R pkg", "Arch"],
+    ["apk", "apk add pkg", "apk search pkg", "apk del pkg", "Alpine"],
+    ["brew", "brew install pkg", "brew search pkg", "brew uninstall pkg", "macOS, Linux"],
+    ["npm", "npm install pkg", "npm search pkg", "npm uninstall pkg", "JavaScript"],
+    ["pip", "pip install pkg", "pip index search", "pip uninstall pkg", "Python"],
+  ],
+};
+
+const CG_PYTHON = {
+  headers: ["Language", "Typing", "Runs how", "Memory", "Where it wins"],
+  rows: [
+    ["Python", "dynamic, strong", "interpreted (CPython bytecode)", "garbage collected", "scripting, data, glue, readability"],
+    ["JavaScript", "dynamic, weak", "JIT compiled in a VM", "garbage collected", "anything in a browser"],
+    ["C", "static, weak", "compiled to machine code", "manual malloc/free", "kernels, drivers, tight control"],
+    ["Rust", "static, strong", "compiled to machine code", "ownership, no GC", "C's speed without C's footguns"],
+    ["Go", "static, strong", "compiled to machine code", "garbage collected", "servers, concurrency, fast builds"],
+  ],
+};
+
+const CG_STANDARDS = {
+  headers: ["Body", "Owns", "Output is called", "Process"],
+  rows: [
+    ["WHATWG", "HTML, DOM, Fetch, URL", "Living Standard", "continuously updated, no versions"],
+    ["W3C", "CSS, WAI-ARIA, SVG, WCAG", "Recommendation", "staged: draft → CR → REC"],
+    ["ECMA TC39", "JavaScript, the language itself", "ECMA-262", "4-stage proposals, yearly cut"],
+    ["IETF", "HTTP, TCP, TLS, DNS", "RFC", "rough consensus and running code"],
+    ["IANA", "port numbers, MIME types, IPs", "registry", "assignment, not design"],
+    ["Unicode", "characters, encodings, emoji", "UAX / TR", "annual release"],
+  ],
+};
+
+const CG_SECTOOLS = {
+  headers: ["Tool", "Answers", "Layer it works at", "Loud or quiet"],
+  rows: [
+    ["nmap", "what hosts and ports exist", "11–12 network", "loud by default"],
+    ["Wireshark", "what is actually on the wire", "09–13 all of it", "passive, silent"],
+    ["Burp Suite", "what a web app does with input", "13 application", "loud"],
+    ["Metasploit", "does a known exploit land", "varies by module", "very loud"],
+    ["Ghidra", "what does this binary do", "08 static, offline", "silent"],
+    ["hashcat", "how strong is this hash", "offline, no target", "silent"],
+    ["Nessus / OpenVAS", "which known CVEs apply", "whole host", "loud"],
+  ],
+};
+
+const CG_CAREERS = {
+  headers: ["Role", "Day looks like", "Core skills", "Common certs"],
+  rows: [
+    ["SOC analyst", "triage alerts, escalate incidents", "log analysis, network basics", "Security+, CySA+"],
+    ["Penetration tester", "scoped attacks, write the report", "exploitation, scripting, writing", "OSCP, PNPT"],
+    ["Incident responder", "contain, investigate, recover", "forensics, memory, timelines", "GCIH, GCFA"],
+    ["AppSec engineer", "review code, fix classes of bug", "reading code, threat modelling", "OSWE, CSSLP"],
+    ["Detection engineer", "write and tune detections", "queries, data pipelines, ATT&CK", "GCDA"],
+    ["GRC analyst", "map controls, evidence, audits", "frameworks, writing, process", "CISA, CISM"],
+  ],
+};
+
+const DOM_TREE = {
+  label: "document", kind: "document",
+  detail: "The root of everything. Not an element itself — it is the container the parser fills, and what document.querySelector searches from.",
+  children: [
+    { label: "<html>", kind: "element", detail: "The single root element. Everything else is a descendant of it.", children: [
+      { label: "<head>", kind: "element", detail: "Metadata that is not rendered: title, meta tags, stylesheet links, scripts. A blocking <script> here stops parsing until it loads.", children: [
+        { label: "<title>", kind: "element", detail: "The tab label and the default bookmark name.", children: [
+          { label: "\"CORE\"", kind: "text", detail: "A text node. Text is not an attribute of the element — it is its own child node in the tree, which is why textContent and childNodes see it." },
+        ] },
+        { label: "<meta charset>", kind: "element", detail: "Declares the encoding. Wrong or missing and every non-ASCII character renders as mojibake." },
+      ] },
+      { label: "<body>", kind: "element", detail: "Everything visible. When people say 'the DOM', they usually mean this subtree.", children: [
+        { label: "<h1>", kind: "element", detail: "A heading element. Its style comes from CSS; the tag itself carries the meaning, which is what screen readers navigate by.", children: [
+          { label: "\"Hello\"", kind: "text", detail: "Another text node — the leaf of this branch." },
+        ] },
+        { label: "<ul>", kind: "element", detail: "An unordered list. Its only valid element children are <li>.", children: [
+          { label: "<li>", kind: "element", detail: "One list item. Repeated siblings like these are what you get back from querySelectorAll." },
+          { label: "<li>", kind: "element", detail: "A second item — a sibling, not a child, of the first." },
+        ] },
+        { label: "<script>", kind: "element", detail: "Placed last so the elements above already exist when it runs. Put it in <head> without defer and it runs before they do." },
+      ] },
+    ] },
+  ],
+};
+
 const TOPICS_LOGIC = [
   {
     id: "logic:boolean",
@@ -433,6 +760,8 @@ NOT (A OR B)   ==  (NOT A) AND (NOT B)`}</Code>
     ],
     retrieval: { q: "Which single gate flips a 0 to a 1 and a 1 to a 0?", a: "NOT" },
     recap: ["Boolean logic has exactly two values: true/false, written 1/0", "AND needs both inputs true; OR needs at least one", "NOT reverses a single input", "De Morgan's Laws let you push a NOT through AND/OR by swapping the operator", "&&, ||, and ! in real code are just AND, OR, and NOT spelled differently", "A truth table for n variables always has exactly 2ⁿ rows"],
+    simulator: true,
+    recapSimulator: () => <TruthTableBuilder name="Truth Table Builder" exprs={TT_BOOLEAN} />,
   },
   {
     id: "logic:gates",
@@ -578,6 +907,7 @@ add 1:
     ],
     retrieval: { q: "How many binary bits does a single hexadecimal digit represent?", a: "4 bits" },
     recap: ["Computers use binary because transistors reliably distinguish 2 states, not 10", "Each binary position is worth a power of 2, just like decimal positions are powers of 10", "Hex exists as human-friendly shorthand — 1 hex digit = exactly 4 bits", "You'll see hex in MAC addresses, IPv6, memory addresses, and color codes", "Octal groups bits by 3 — it's why Unix permissions like chmod 755 use those exact numbers", "Two's complement negates a number by flipping every bit and adding 1"],
+    simulator: true,
   },
   {
     id: "logic:bitwise",
@@ -651,6 +981,7 @@ result   = 00000100   → non-zero, so the flag IS set`}</Code>
     ],
     retrieval: { q: "What does shifting a binary number one position to the left do to its value?", a: "Doubles it" },
     recap: ["Bitwise operators (&, |, ^, ~) act on every bit independently, not the whole value at once", "A bitmask uses AND to check one specific flag inside a number packed with many", "Left shift ×2, right shift ÷2, per position shifted", "OR sets a bit, AND-with-NOT clears a bit, XOR toggles a bit", "Unix permissions, CSS colors, and network flag bytes are all real-world bitwise masking"],
+    simulator: true,
   },
   {
     id: "logic:sequential",
@@ -710,6 +1041,8 @@ result   = 00000100   → non-zero, so the flag IS set`}</Code>
       },
     ],
     recap: ["Combinational logic has no memory — same inputs always give the same output", "Sequential logic (flip-flops) can hold one bit of state indefinitely", "A clock signal synchronizes when sequential circuits are allowed to change", "Chained flip-flops become registers and counters — literally what's inside a CPU", "A multiplexer selects one of several inputs; a decoder activates one of several outputs", "A finite state machine uses stored state to decide how to react to new input — TCP connections and game logic both work this way", "Clock speed is limited by propagation delay — how long it takes a signal to settle through a gate"],
+    simulator: true,
+    recapSimulator: () => <StepThrough name="Flip-Flop Clock Stepper" steps={STEP_SEQUENTIAL} note="Combinational logic answers instantly; sequential logic answers on an edge. That difference is what turns a calculator into a computer." />,
   },
   {
     id: "logic:y2038",
@@ -848,6 +1181,8 @@ NOT (A OR  B)  =  (NOT A) AND (NOT B)`}</Code>
     ],
     retrieval: { q: "State De Morgan's law for NOT (A AND B).", a: "NOT (A AND B) = (NOT A) OR (NOT B) — negation flips the operator and negates each term" },
     recap: ["Simplification finds the shortest expression with the same truth table — a literally smaller, cheaper circuit", "Basic laws (identity, null, idempotent, complement) include some with no arithmetic equivalent", "Commutative, associative, and distributive laws let you rearrange freely — and Boolean distributes both ways", "De Morgan's laws flip operators across a negation, bridging NAND to every other operation", "Karnaugh maps turn simplification into visual grouping, using Gray-code ordering so neighbors differ by one bit", "Simplifying an expression directly produces a smaller physical circuit — the concrete payoff of the whole phase"],
+    simulator: true,
+    recapSimulator: () => <TruthTableBuilder name="Equivalence Checker" exprs={TT_SIMPLIFY} note="Two expressions are equal when their OUT columns match on every row. That is the whole proof technique." />,
   },
 ];
 /* ══════════════════════ INTERACTIVE: FETCH-DECODE-EXECUTE STEPPER ══════════════════════ */
@@ -1051,6 +1386,7 @@ const TOPICS_HARDWARE = [
     ],
     retrieval: { q: "What is the one job every layer in the stack shares?", a: "Hiding the complexity of the layer below it from the layer above it" },
     recap: ["A running computer is a stack of layers, each hiding the one below it", "Firmware (BIOS/UEFI) runs first and hands off to a bootloader, which loads the OS", "The kernel manages hardware on behalf of programs via system calls", "Drivers translate between the kernel and specific hardware devices", "Libraries and frameworks sit above the kernel; applications sit at the very top"],
+    simulator: true,
   },
   {
     id: "hardware:cpu",
@@ -1161,6 +1497,7 @@ const TOPICS_HARDWARE = [
     ],
     retrieval: { q: "Why does RAM lose its contents when the power goes out, but an SSD doesn't?", a: "RAM is volatile (needs continuous power); SSDs are non-volatile" },
     recap: ["A bus is a bundle of wires; address/data/control buses each carry a different kind of information", "Memory exists in layers because faster memory is more expensive and must stay small", "Cache bets that recently-used data will be needed again soon; a cache miss falls through to slower RAM", "RAM is volatile (loses data without power); storage is non-volatile", "The fast/small vs. slow/large tradeoff reappears throughout computing, not just in hardware"],
+    simulator: true,
   },
   {
     id: "hardware:storage",
@@ -1207,6 +1544,8 @@ const TOPICS_HARDWARE = [
     ],
     retrieval: { q: "Why are SSDs faster than traditional HDDs?", a: "SSDs have no moving parts (no spinning platter, no read/write arm) — everything is electrical" },
     recap: ["Storage capacity has followed the same roughly-doubling pattern as other hardware over time", "HDDs store data magnetically on spinning platters read by a moving arm", "SCSI CD-ROMs needed an extra adapter card; ATAPI plugged directly into the existing IDE slot", "SSDs remove physical motion entirely, which is the direct source of their speed advantage", "A drive must be partitioned and formatted before an OS can use it"],
+    simulator: true,
+    recapSimulator: () => <CompareGrid name="Memory Hierarchy" headers={CG_STORAGE.headers} rows={CG_STORAGE.rows} note="Click Typical latency and read down: each tier is roughly an order of magnitude slower than the one above. The whole hierarchy exists to hide that gap." />,
   },
   {
     id: "hardware:interrupts",
@@ -1254,6 +1593,8 @@ const TOPICS_HARDWARE = [
     ],
     retrieval: { q: "What problem does DMA solve that plain interrupts don't?", a: "It lets a device transfer bulk data directly into memory without the CPU handling every byte" },
     recap: ["An interrupt is a signal that says 'pause and handle this now' — the alternative, polling, wastes CPU time constantly asking devices if they need attention", "DMA lets a device write directly to memory without routing every byte through the CPU", "IRQ lines are the numbered channels devices use to signal interrupts — 8 originally, 16 later", "These concepts are still active in every modern system, even though the exact mechanisms have evolved", "A full transfer typically looks like: interrupt → hand-off → DMA transfer → interrupt again when done"],
+    simulator: true,
+    recapSimulator: () => <StepThrough name="Interrupt Walkthrough" steps={STEP_INTERRUPTS} />,
   },
   {
     id: "hardware:casestudies",
@@ -1300,6 +1641,7 @@ const TOPICS_HARDWARE = [
     ],
     retrieval: { q: "What's the general tradeoff between lower and higher frequency wireless signals?", a: "Lower frequency = longer range and better penetration; higher frequency = more bandwidth but shorter range" },
     recap: ["A softmodem does a hardware job (signal modulation) in software, trading cost for reliability and CPU overhead", "Moving a job from dedicated hardware to general-purpose software is a recurring tradeoff throughout computing", "All wireless communication encodes data onto electromagnetic waves — WiFi, Bluetooth, and radio all share this same physics", "Different wireless bands trade off range, speed, and obstacle penetration", "Hardware sets the physical limits; software negotiates around them — the theme connecting every phase ahead"],
+    simulator: true,
   },
 ];
 /* ══════════════════════ INTERACTIVE: CHMOD PERMISSIONS CALCULATOR ══════════════════════ */
@@ -1575,6 +1917,8 @@ git checkout -b new-feature   # create and switch in one step`}</Code>
     ],
     retrieval: { q: "What's the difference between staging (add) and committing in git?", a: "Staging chooses which changes go into the next snapshot; committing actually saves that snapshot" },
     recap: ["Git tracks precise, timestamped, reversible snapshots instead of manually copying folders", "The core loop is add (stage) → commit (save) → push (share)", "A branch is an independent line of development that doesn't affect main until merged", "A merge conflict happens only when two branches changed the same lines differently", "GitHub adds hosting and collaboration (remotes, forks, pull requests) on top of git itself"],
+    simulator: true,
+    recapSimulator: () => <StepThrough name="A Change Through Git" steps={STEP_GIT} />,
   },
   {
     id: "cli:scripting",
@@ -1706,6 +2050,8 @@ sudo apt remove nginx      # remove it again`}</Code>
     ],
     retrieval: { q: "What's the key difference between apt and dpkg?", a: "apt handles dependencies and fetches from a repository; dpkg only installs individual package files directly" },
     recap: ["Linux installs software from trusted package repositories rather than random installers", "apt sits on top of dpkg, adding dependency resolution and network fetching", "Homebrew (macOS) and winget (Windows) solve the same problem on other platforms", "PS1 and frameworks like oh-my-zsh customize your shell prompt", "Dotfiles (.bashrc, .vimrc, etc.) hold your personal configuration and are often version-controlled with git"],
+    simulator: true,
+    recapSimulator: () => <CompareGrid name="Package Manager Rosetta" headers={CG_PACKAGES.headers} rows={CG_PACKAGES.rows} note="The verbs differ; the model does not. Learn one and the rest are a lookup." />,
   },
 ];
 
@@ -2071,6 +2417,7 @@ users[0]["name"]   # "Alice"`}</Code>
     ],
     retrieval: { q: "When would you reach for a dictionary instead of a list?", a: "When you want to look values up by a meaningful name (key) rather than by numeric position" },
     recap: ["A list holds ordered values, accessed by numeric index starting at 0", "A dictionary holds values accessed by a meaningful key instead of position", "Choose based on whether order or meaningful naming matters more for your data", "Structures nest — a list of dictionaries is an extremely common real-world shape", "JSON, used constantly on the web, is exactly this same nested shape written as text"],
+    simulator: true,
   },
   {
     id: "programming:python",
@@ -2125,6 +2472,8 @@ for x in range(5):
     ],
     retrieval: { q: "What determines the boundaries of a code block in Python, instead of curly braces?", a: "Indentation (whitespace) itself is syntactically meaningful" },
     recap: ["Python uses indentation, not braces, to mark code blocks", "Python is dynamically typed — a variable's type is determined at assignment, and can change", "The standard library plus pip-installed packages cover most needs without external tools", "A list comprehension is a compact way to build a list by transforming another collection", "Python dominates data science/AI largely because its libraries do heavy work in fast compiled code underneath a readable interface"],
+    simulator: true,
+    recapSimulator: () => <CompareGrid name="Language Comparison" headers={CG_PYTHON.headers} rows={CG_PYTHON.rows} note="Click Memory: garbage collected or manual is the single biggest split in how these languages feel to write." />,
   },
   {
     id: "programming:js-c",
@@ -2184,6 +2533,7 @@ int main() {
     ],
     retrieval: { q: "What's the fundamental tradeoff between a compiled language like C and an interpreted one like Python?", a: "Compiled code runs faster but needs a build step; interpreted code runs instantly but slower" },
     recap: ["JavaScript is the only language every browser runs natively, and is comparatively forgiving about syntax", "Asynchronous JavaScript lets slow operations run without freezing the whole page", "C compiles directly to machine code and requires explicit type declarations", "Pointers hold memory addresses directly; C requires manually requesting and freeing memory", "Python and JavaScript use garbage collection to automate memory management that C leaves to the programmer"],
+    simulator: true,
   },
 ];
 /* ══════════════════════ INTERACTIVE: CSS BOX MODEL VISUALIZER ══════════════════════ */
@@ -2295,6 +2645,8 @@ const TOPICS_WEB = [
     ],
     retrieval: { q: "What's the core difference in job between HTML and CSS?", a: "HTML describes what content is (structure); CSS describes how it looks" },
     recap: ["HTML is markup, not programming — tags describe what content is, not how it behaves", "Every page shares the html/head/body skeleton", "A small set of tags (headings, paragraphs, links, images, lists) covers most content", "Semantic tags (header, nav, main, footer) communicate structure to screen readers and search engines, not just browsers", "Forms collect and submit user input; method=\"post\" keeps sensitive data out of the visible URL"],
+    simulator: true,
+    recapSimulator: () => <TreeExplorer name="DOM Tree Explorer" root={DOM_TREE} hint="Click a node to inspect it; click again to fold it. Text is its own node, not a property of its parent." />,
   },
   {
     id: "web:css",
@@ -2465,6 +2817,8 @@ button.addEventListener("click", () => {
     ],
     retrieval: { q: "Why can a page start showing content before the entire HTML file has finished downloading?", a: "The browser builds the DOM incrementally as HTML arrives, top to bottom" },
     recap: ["DNS translates a human-readable domain name into a numeric IP address before anything else can happen", "A request/response cycle over HTTP is the foundational exchange behind loading a page", "The browser builds the DOM incrementally as HTML streams in", "Scripts and CSS can block rendering, which is why scripts are often deferred or placed at the end", "Page speed is a real engineering discipline because every step in the load chain adds noticeable delay"],
+    simulator: true,
+    recapSimulator: () => <StepThrough name="URL to Pixels" steps={STEP_PAGELOAD} note="Steps 1-3 move no page content at all. On a high-latency link that setup, not the download, is most of the wait." />,
   },
   {
     id: "web:standards",
@@ -2507,6 +2861,8 @@ button.addEventListener("click", () => {
     ],
     retrieval: { q: "Why does a real <button> element beat a <div> styled to look like one?", a: "The real button is automatically keyboard-operable and correctly announced by screen readers; a styled div is neither without extra work" },
     recap: ["Web standards let the same page work consistently across different browsers", "The browser wars of the 90s/2000s directly motivated today's standards compliance", "Accessibility means building for visual, motor, auditory, and cognitive differences — a substantial share of any real audience", "Semantic HTML is the first and best accessibility tool; ARIA patches gaps only where no native element exists", "Keyboard-only navigation testing surfaces most accessibility problems quickly and cheaply"],
+    simulator: true,
+    recapSimulator: () => <CompareGrid name="Who Standardises What" headers={CG_STANDARDS.headers} rows={CG_STANDARDS.rows} />,
   },
   {
     id: "web:sql",
@@ -2706,6 +3062,7 @@ const TOPICS_NETWORKING = [
     ],
     retrieval: { q: "What happens to data at each layer as it travels down the stack before being sent?", a: "Each layer wraps (encapsulates) the data from the layer above it in its own header" },
     recap: ["The OSI model has 7 layers, each hiding its complexity from the layers around it", "Layers 1-3 (Physical, Data Link, Network) get data physically moving and addressed", "Layers 4-7 (Transport, Session, Presentation, Application) manage the actual conversation", "Encapsulation wraps data in a new header at each layer going down; de-encapsulation reverses it going up", "Real protocols map to specific layers: HTTP=7, TCP/UDP=4, IP=3, Ethernet/WiFi=2"],
+    simulator: true,
   },
   {
     id: "networking:topologies",
@@ -2792,6 +3149,8 @@ const TOPICS_NETWORKING = [
     ],
     retrieval: { q: "When two sources disagree about a route, which does the router trust?", a: "Whichever source has the lower administrative distance" },
     recap: ["A router forwards packets toward their destination using a routing table, one hop at a time", "A default route (0.0.0.0/0) catches anything not matched by a more specific entry", "Administrative distance ranks how much a router trusts different route sources when they conflict", "Static routes are manual and fixed; dynamic routing protocols adapt automatically to changes", "No single router needs the whole path — only the next hop — which is what makes internet-scale routing tractable"],
+    simulator: true,
+    recapSimulator: () => <StepThrough name="A Packet Across the Internet" steps={STEP_ROUTING} />,
   },
   {
     id: "networking:http-ports",
@@ -2838,6 +3197,7 @@ const TOPICS_NETWORKING = [
     ],
     retrieval: { q: "What do a 4xx and a 5xx status code each indicate?", a: "4xx means the client made an error; 5xx means the server made an error" },
     recap: ["A port routes traffic to the right service on a machine; an IP address alone only routes to the right machine", "Ports 0-1023 are well-known — 80 for HTTP, 443 for HTTPS, 22 for SSH", "HTTP methods (GET, POST, PUT, DELETE) map closely onto SQL's SELECT/INSERT/UPDATE/DELETE", "Status codes group by first digit: 2xx success, 3xx redirect, 4xx client error, 5xx server error", "HTTPS is HTTP wrapped in TLS encryption, running on port 443"],
+    simulator: true,
   },
   {
     id: "networking:subnetting",
@@ -3018,6 +3378,7 @@ const TOPICS_SECURITY = [
     ],
     retrieval: { q: "What's the single most important factor separating ethical hacking from a crime?", a: "Explicit, documented authorization from the system's owner" },
     recap: ["Ethical hacking means finding and reporting weaknesses with explicit permission, to get them fixed", "Testing without authorization is illegal regardless of intent or skill level", "White hat = authorized; black hat = malicious/unauthorized; gray hat = unauthorized but not malicious, still risky", "The CFAA (in the US) and equivalent laws elsewhere make unauthorized access a real crime", "This capstone phase draws directly on nearly everything from every prior phase"],
+    simulator: true,
   },
   {
     id: "security:lifecycle",
@@ -3108,6 +3469,8 @@ query = "SELECT * FROM users WHERE name = '" + userInput + "'"`}</Code>
     ],
     retrieval: { q: "What single underlying mistake do SQL injection, XSS, and buffer overflows all share?", a: "Failing to properly validate or separate untrusted input from the system's own logic or memory" },
     recap: ["SQL injection happens when user input isn't kept separate from a query's actual structure", "XSS happens when user content is displayed as executable markup instead of plain text", "A buffer overflow happens when data written exceeds its allocated memory and spills into adjacent memory", "This course teaches the mechanism, not working payloads — understanding transfers, memorized attacks don't", "All three vulnerabilities share one root cause: untrusted input not being properly validated or separated"],
+    simulator: true,
+    recapSimulator: () => <StepThrough name="Stack Buffer Overflow" steps={STEP_OVERFLOW} note="Every step here is one missing bounds check. The mitigations that follow make exploitation harder without ever fixing that." />,
   },
   {
     id: "security:tools",
@@ -3149,6 +3512,8 @@ query = "SELECT * FROM users WHERE name = '" + userInput + "'"`}</Code>
     ],
     retrieval: { q: "What's a common misconception about Metasploit specifically?", a: "That it's a single button that automatically 'hacks' anything, rather than a framework requiring real understanding to use effectively" },
     recap: ["Nmap discovers live hosts, open ports, and running services during the scanning stage", "Wireshark captures and inspects raw network traffic at the packet level", "Burp Suite inspects and manipulates web traffic between a browser and an application", "Metasploit organizes known vulnerabilities and testing modules — a framework, not an automatic solution", "Every tool automates something a skilled analyst could do manually; none replace genuine understanding"],
+    simulator: true,
+    recapSimulator: () => <CompareGrid name="Security Tooling" headers={CG_SECTOOLS.headers} rows={CG_SECTOOLS.rows} note="Click Loud or quiet: on an authorised engagement that column decides your sequencing as much as capability does." />,
   },
   {
     id: "security:social-network-attacks",
@@ -3234,6 +3599,8 @@ query = "SELECT * FROM users WHERE name = '" + userInput + "'"`}</Code>
     ],
     retrieval: { q: "What does 'responsible disclosure' mean when a vulnerability is found outside a formal engagement?", a: "Privately notifying the vendor first and giving them reasonable time to fix it before any public disclosure" },
     recap: ["A good pentest report includes an executive summary, detailed findings, and prioritized remediation steps", "Responsible disclosure means notifying a vendor privately before any public disclosure", "Early hacker culture, including the BBS scene, is worth understanding honestly as history, not glorified", "Security+, CEH, and OSCP are common certifications validating this skill set at different levels", "This entire capstone phase is every prior phase's knowledge aimed at one question: is this system actually safe?"],
+    simulator: true,
+    recapSimulator: () => <CompareGrid name="Roles in Security" headers={CG_CAREERS.headers} rows={CG_CAREERS.rows} />,
   },
 ];
 

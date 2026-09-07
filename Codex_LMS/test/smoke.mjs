@@ -1,5 +1,7 @@
 import { chromium } from "playwright";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 const URL = process.argv[2] || "http://localhost:4173/";
 
@@ -24,6 +26,58 @@ function resolveBrowser() {
       `PLAYWRIGHT_CHROMIUM_PATH to an existing binary.`
   );
 }
+
+
+// ── The `simulator` flag must match what a topic actually renders ──────────
+// The flag drives the "· interactive" badge on topic cards. It has already
+// drifted once — 17 topics had a widget while 7 carried the flag — and that
+// drift is invisible in the UI: the badge simply under-reports. Checked from
+// source rather than by visiting 43 topics, because the failure is a stale
+// literal, not a rendering fault.
+function checkSimulatorFlags() {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "CoreApp.jsx"), "utf8");
+  const widgets = new Set([...src.matchAll(/^function ([A-Z][A-Za-z]*)\(/gm)].map((m) => m[1]));
+  const arrays = ["LOGIC", "HARDWARE", "CLI", "PROGRAMMING", "WEB", "NETWORKING", "SECURITY"];
+  const bad = [];
+  let total = 0;
+  let flagged = 0;
+
+  for (const name of arrays) {
+    const at = src.indexOf(`const TOPICS_${name} = [`);
+    if (at < 0) throw new Error(`TOPICS_${name} not found — smoke test is out of date with the source`);
+    let depth = 0;
+    let i = src.indexOf("[", at);
+    const start = i;
+    for (; i < src.length; i++) {
+      if (src[i] === "[") depth++;
+      else if (src[i] === "]" && --depth === 0) break;
+    }
+    const body = src.slice(start + 1, i);
+    let d = 0;
+    let open = null;
+    for (let k = 0; k < body.length; k++) {
+      if (body[k] === "{") { if (d === 0) open = k; d++; }
+      else if (body[k] === "}" && --d === 0) {
+        const topic = body.slice(open, k + 1);
+        const id = (topic.match(/id: "([^"]+)"/) || [])[1];
+        if (!id) continue;
+        total++;
+        const flag = /simulator: true/.test(topic);
+        const renders = /recapSimulator:/.test(topic) ||
+          [...topic.matchAll(/<([A-Z][A-Za-z]*)\s*\/>/g)].some((m) => widgets.has(m[1]));
+        if (flag) flagged++;
+        if (flag !== renders) bad.push(`${id}: flag=${flag} but renders=${renders}`);
+      }
+    }
+  }
+  if (bad.length) {
+    throw new Error("simulator flag out of sync with what renders:\n   " + bad.join("\n   "));
+  }
+  return { total, flagged };
+}
+
+const flags = checkSimulatorFlags();
+console.log(`  simulator flag matches reality: ${flags.flagged}/${flags.total} topics interactive`);
 
 const browser = await chromium.launch(resolveBrowser());
 const ctx = await browser.newContext();
