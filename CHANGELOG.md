@@ -1,5 +1,56 @@
 # CHANGELOG
 
+## v3.4 — 2026-09-07
+
+### Added — a diagram on every layer README
+
+The codex draws well: 2,235 box-character lines across 78 files, essentially
+all of them correctly fenced. None of that reached the 23 layer `README.md`
+files, which are the first thing anyone opens for a layer — **0 of 23 carried
+a diagram.**
+
+Each now has one between the opening blockquote and *At a glance*:
+
+- `## In the stack` for the 17 layers with neighbours, showing the layer
+  above and below and naming the interface that crosses each boundary —
+  system calls between 05 and 06, the ISA between 01 and 02, and so on. The
+  neighbours and interfaces come from each README's own *Adjacent* and
+  *Medium / Interface* rows rather than being invented.
+- `## Across the stack` for the six cross-cutting layers (14–19), fanning out
+  to the layers each one intersects, since "above" and "below" do not apply
+  to them.
+
+Two layers whose *Adjacent* row lists a second neighbour the box cannot show
+— 01 to 09, and 08 to 13 — say so in a line under the diagram, so the drawing
+is never quietly less true than the table beneath it.
+
+Drawn as fenced text, not images: `_assets/` is empty, and a fenced diagram
+stays reviewable in a diff and renders identically on GitHub and in the macOS
+app's code-block path.
+
+### Added — `tools/diagram_audit.py`
+
+Diagrams have one failure mode and it is silent: box characters outside a
+fence render proportional, the columns stop lining up, and nothing in the
+source looks wrong. Three checks, gating in CI beside the other audits:
+
+- `UNFENCED` — box characters in prose. Inline code spans are stripped first,
+  so `` `─3*[worker]` `` in `05_OS_Kernel/man_pages/process_commands.md` is
+  correctly read as a mention rather than a broken drawing.
+- `TOO WIDE` — past 90 columns. The widest existing diagram is 86 and p99 is
+  77, so the limit was measured rather than guessed.
+- `NO DIAGRAM` — a layer README without one.
+
+It found a bug in itself on first use. Writing the convention into
+`STRUCTURE.md` needed a ```` ````-fenced example containing a ```` ```text ````
+block, and the naive "toggle on any three backticks" fence tracker read that
+as a fence closing. It now follows CommonMark: a fence closes only on a run
+at least as long as the one that opened it.
+
+`docs.yml` keeps the job name `docs audit` — it was renamed once already, and
+renaming a required check after branch protection exists is what leaves pull
+requests permanently unmergeable.
+
 ## v3.3 — 2026-09-06
 
 ### Fixed — the 138 section indexes were effectively unnamed

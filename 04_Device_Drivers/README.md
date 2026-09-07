@@ -4,6 +4,23 @@
 > let the kernel speak to the wildly varied stuff on the board without each
 > subsystem reinventing the wheel.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  05  OS Kernel                               │
+└───────────────────────┬──────────────────────┘
+                        │  driver APIs the kernel calls
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  04  Device Drivers               ◀── here   ┃
+┃      MMIO · DMA · IRQ handling · device state┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  electrical signals, serial & parallel buses
+┌───────────────────────┴──────────────────────┐
+│  01  Circuit Board                           │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

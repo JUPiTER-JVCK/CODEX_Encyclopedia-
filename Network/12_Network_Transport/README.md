@@ -4,6 +4,23 @@
 > control. The handshake-and-window machinery that turns IP packets into
 > usable byte streams or messages.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  13  Network Application (L7)                │
+└───────────────────────┬──────────────────────┘
+                        │  TCP / UDP / QUIC sockets
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  12  Network Transport (L4)       ◀── here   ┃
+┃      segments · ports · reliability · flow   ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  IP packets, host to host
+┌───────────────────────┴──────────────────────┐
+│  11  Network Internet (L3)                   │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

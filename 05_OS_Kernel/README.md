@@ -4,6 +4,23 @@
 > through drivers, enforces privilege boundaries, and exposes the syscall
 > interface that everything above depends on.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  06  System Libraries                        │
+└───────────────────────┬──────────────────────┘
+                        │  system calls
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  05  OS Kernel                    ◀── here   ┃
+┃      processes · memory · VFS · scheduling   ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  driver APIs the kernel calls
+┌───────────────────────┴──────────────────────┐
+│  04  Device Drivers                          │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

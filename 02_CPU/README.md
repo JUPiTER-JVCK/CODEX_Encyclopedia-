@@ -4,6 +4,23 @@
 > talks to the rest of the board over buses. Everything in software eventually
 > compiles down to what this layer understands: machine code.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  03  Firmware / BIOS                         │
+└───────────────────────┬──────────────────────┘
+                        │  instruction set, microcode, MSRs
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  02  CPU                          ◀── here   ┃
+┃      ISA · microarchitecture · caches · MMU  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  electrical signals, serial & parallel buses
+┌───────────────────────┴──────────────────────┐
+│  01  Circuit Board                           │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

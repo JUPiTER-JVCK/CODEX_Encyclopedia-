@@ -4,6 +4,23 @@
 > threading, crypto, networking. The "high-level wrappers around syscalls"
 > that most C/C++ programs touch every line.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  07  Runtime Environment                     │
+└───────────────────────┬──────────────────────┘
+                        │  function calls wrapping syscalls
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  06  System Libraries             ◀── here   ┃
+┃      libc · dynamic linking · ABI            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  system calls
+┌───────────────────────┴──────────────────────┐
+│  05  OS Kernel                               │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

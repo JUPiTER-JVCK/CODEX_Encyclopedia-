@@ -3,6 +3,23 @@
 > The first software the CPU runs. Initializes RAM, enumerates buses, sets up
 > the platform, and hands control to a bootloader and ultimately the OS.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  05  OS Kernel                               │
+└───────────────────────┬──────────────────────┘
+                        │  UEFI services, ACPI tables
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  03  Firmware / BIOS              ◀── here   ┃
+┃      power-on · POST · boot · platform init  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  instruction set, microcode, MSRs
+┌───────────────────────┴──────────────────────┐
+│  02  CPU                                     │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

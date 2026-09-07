@@ -5,6 +5,21 @@
 > *100 LeetCode Problems Must Do* PDF, plus the canonical Blind 75 / NeetCode 150
 > tracks.
 
+## Across the stack
+
+```text
+this layer cuts across the stack rather than sitting in one place
+
+  15  AI / ML              ─┐
+  08  User Applications    ─┤
+  07  Runtime Environment  ─┤      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  06  System Libraries     ─┼──────┃  17  Algorithms & DSA                 ◀── here   ┃
+  05  OS Kernel            ─┤      ┃      complexity · structures · problems          ┃
+  02  CPU                  ─┘      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+every layer that holds code holds algorithms
+```
+
 ## At a glance
 
 | Field | Value |

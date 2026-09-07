@@ -4,6 +4,23 @@
 > switching, VLANs, and the framing that turns a raw bit pipe into something
 > packets can ride on.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  11  Network Internet (L3)                   │
+└───────────────────────┬──────────────────────┘
+                        │  frames carrying packets
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  10  Network Data Link (L2)       ◀── here   ┃
+┃      frames · MAC addressing · switching     ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  encoded bits on copper, fiber, RF
+┌───────────────────────┴──────────────────────┐
+│  09  Network Physical (L1)                   │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

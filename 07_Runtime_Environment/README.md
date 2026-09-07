@@ -4,6 +4,23 @@
 > .NET CLR, JS engines, Go/Rust standard runtimes, container runtimes,
 > and the orchestration on top of them.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  08  User Applications                       │
+└───────────────────────┬──────────────────────┘
+                        │  runtime APIs (JNI, FFI, ABI)
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  07  Runtime Environment          ◀── here   ┃
+┃      VMs · interpreters · GC · FFI           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  function calls wrapping syscalls
+┌───────────────────────┴──────────────────────┐
+│  06  System Libraries                        │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

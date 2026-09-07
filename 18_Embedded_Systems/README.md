@@ -5,6 +5,23 @@
 > engineers wear every hat in the codex. Mirrors the *Embedded Systems
 > Engineering Roadmap v1.2.3* (Meysam Parvizi) supplied as image 4.
 
+## Across the stack
+
+```text
+this layer cuts across the stack rather than sitting in one place
+
+  16  RF / Wireless        ─┐
+  14  Security             ─┤
+  13  Network Application  ─┤
+  09  Network Physical     ─┤      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  05  OS Kernel / RTOS     ─┼──────┃  18  Embedded Systems                 ◀── here   ┃
+  03  Firmware             ─┤      ┃      co-design under tight constraints           ┃
+  02  CPU / MCU            ─┤      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  00  Physics              ─┘
+
+one engineer owns the whole column, from silicon to cloud
+```
+
 ## At a glance
 
 | Field | Value |

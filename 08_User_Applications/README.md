@@ -4,6 +4,21 @@
 > players, games, DAWs, CAD, mobile apps. Where every layer below converges
 > into something a person can click, tap, or type into.
 
+## In the stack
+
+```text
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  08  User Applications            ◀── here   ┃
+┃      GUI · TUI · CLI — what a person touches ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  runtime APIs (JNI, FFI, ABI)
+┌───────────────────────┴──────────────────────┐
+│  07  Runtime Environment                     │
+└──────────────────────────────────────────────┘
+
+also talks to 13 Network Application — every networked app crosses there
+```
+
 ## At a glance
 
 | Field | Value |

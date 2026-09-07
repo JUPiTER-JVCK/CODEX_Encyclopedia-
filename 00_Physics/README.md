@@ -4,6 +4,19 @@
 > quanta, thermodynamics — the rules that semiconductors, transistors, and
 > ultimately CPUs are obeying when they compute.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  00b  Devices                                │
+└───────────────────────┬──────────────────────┘
+                        │  carrier behaviour in silicon
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  00  Physics                      ◀── here   ┃
+┃      charges · fields · quanta · heat        ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+```
+
 ## At a glance
 
 | Field | Value |

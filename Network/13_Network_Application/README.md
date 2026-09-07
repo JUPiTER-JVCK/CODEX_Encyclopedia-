@@ -4,6 +4,23 @@
 > messaging. The protocols that user-facing software actually speaks on the
 > wire.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  08  User Applications                       │
+└───────────────────────┬──────────────────────┘
+                        │  application protocol messages
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  13  Network Application (L7)     ◀── here   ┃
+┃      HTTP · DNS · TLS · SMTP · SSH           ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  TCP / UDP / QUIC sockets
+┌───────────────────────┴──────────────────────┐
+│  12  Network Transport (L4)                  │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |
