@@ -1,5 +1,62 @@
 # CHANGELOG
 
+## v3.5 — 2026-09-07
+
+### Added — something to manipulate in every topic
+
+CORE was built around learning by manipulation, but only **17 of 43 topics**
+had anything to interact with. CLI and Web sat at 1 of 6. Now every topic
+does.
+
+Four reusable primitives carry most of it, driven by data declared beside the
+topic that uses them, so giving a topic something to manipulate is a data
+change rather than another component:
+
+| Primitive | Shape |
+|---|---|
+| `StepThrough` | a process one phase at a time, with state per step |
+| `CompareGrid` | hold one dimension still and read it down every row |
+| `TreeExplorer` | expand a nested structure, inspect one node |
+| `TruthTableBuilder` | pick an expression, read every case |
+
+Eleven topics whose subject has a shape of its own got a bespoke widget
+instead: a signed 32-bit clock walking into its sign bit, a vim mode machine,
+the shell's expansion order, a call stack pushing and popping frames, the
+event loop showing why `A D C B` is not the order it was written, a pipeline
+composer, a value inspector, a query builder, a topology explorer, a VLAN
+lab, and a phishing inspector.
+
+Wired through the existing `recapSimulator` hook, which already rendered in
+both read modes and had been used exactly once since v3.2.
+
+### Fixed — the "interactive" badge was wrong twice
+
+`simulator: true` drives the badge on topic cards. It was set on 7 topics
+while 17 had a widget, so ten topics hid what they had.
+
+Correcting that revealed a second, subtler error: the first fix counted *any*
+component reference as interactive, which quietly promoted seven **static
+diagrams** — `FullStackDiagram`, `OSIStackDiagram`, `HatCards` and four more,
+none of which hold any state — into things the badge called interactive. The
+sweep added below caught it by opening each topic and finding no widget.
+
+Interactive now means a component that holds state. Those seven topics kept
+their diagram and gained a real widget beside it, so the badge is true on all
+43 rather than true by redefinition.
+
+### Added — two guards in `test/smoke.mjs`
+
+- A source check that a topic's `simulator` flag agrees with whether it
+  renders a stateful widget. Verified by removing the flag from `web:css`
+  and from `web:sql`; both failed the run naming the topic.
+- A render sweep that opens **all 43 topics** in reference mode and asserts
+  each mounts a widget with no page error. This is what caught the static
+  diagrams, and it is the only check that proves 33 new components actually
+  render rather than merely compiling.
+
+Bundle: 472.96 → 530.51 kB raw, 148.34 → 166.32 kB gzipped — about 18 kB
+gzipped for 33 widgets, because most share four implementations.
+
 ## v3.4 — 2026-09-07
 
 ### Added — a diagram on every layer README

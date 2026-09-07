@@ -40,11 +40,27 @@ npm run smoke      # Playwright end-to-end check (see Testing below)
 **43 topics, 222 chapters**, plus the Toolkit (glossary, visual library,
 playground) and the Ethload historical guide.
 
-Interactive pieces: GateSimulator, BaseConverter, BitwiseVisualizer,
-CPUCycleStepper, MemoryHierarchyVisualizer, FullStackDiagram, BusWidthChart,
-SpectrumDiagram, ChmodCalculator, FilesystemTreeDiagram, CodeTracer,
-DataStructureDiagram, CompiledSpectrum, BoxModelVisualizer, SubnetCalculator,
-OSIStackDiagram, HttpStatusDiagram, AttackLifecycleStepper, HatCards.
+**Every one of the 43 topics has something to manipulate.** Four reusable
+primitives cover most of them, driven by per-topic data rather than a new
+component each time:
+
+| Primitive | Shape |
+|---|---|
+| `StepThrough` | a process one phase at a time, with state per step |
+| `CompareGrid` | hold one dimension still and read it down every row |
+| `TreeExplorer` | expand a nested structure, inspect one node |
+| `TruthTableBuilder` | pick an expression, read every case |
+
+Topics whose subject has a shape of its own get a bespoke widget: gate
+simulator, base converter, bitwise visualiser, CPU cycle stepper, chmod
+calculator, subnet calculator, code tracer, box-model visualiser, a signed
+32-bit clock walking into its sign bit, a vim mode machine, shell expansion
+order, a call stack, the event loop, a pipeline composer, a value inspector,
+a query builder, a topology explorer, a VLAN lab and a phishing inspector.
+
+`simulator: true` on a topic means it renders a component that **holds
+state** — a static diagram is an illustration, not a simulator. Both halves
+of that are enforced by `test/smoke.mjs`; see *Testing*.
 
 ## Layout
 
@@ -56,7 +72,7 @@ Codex_LMS/
 ├── public/favicon.svg
 ├── src/
 │   ├── main.jsx            ← React root
-│   ├── CoreApp.jsx         ← the whole app (~4 700 lines)
+│   ├── CoreApp.jsx         ← the whole app (~5610 lines)
 │   └── storage.js          ← progress persistence adapter
 ├── test/smoke.mjs          ← Playwright end-to-end check
 │
@@ -107,6 +123,17 @@ progress survives a reload:
 6. Reloads and asserts the value is byte-identical
 7. Reports any `pageerror` or `console.error`
 
+Two further guards run alongside it:
+
+- **Flag consistency.** A topic's `simulator: true` must agree with whether
+  it renders a component that holds state. Read from source, because the
+  failure is a stale literal rather than a rendering fault.
+- **Render sweep.** All 43 topics are opened in reference mode and each must
+  mount a widget with no page error. This is the only check that proves the
+  components render rather than merely compile — and it earned its keep
+  immediately, catching seven topics whose "widget" was a static diagram with
+  no state, which the flag check alone had waved through.
+
 It expects a server already running (`npm run preview`) and takes the URL as
 its first argument, defaulting to `http://localhost:4173/`:
 
@@ -153,6 +180,7 @@ red on a network hiccup is a gate people learn to ignore.
 
 - Fonts (Poppins, Lora, JetBrains Mono) load from Google Fonts. Offline, the
   app falls back to system serif/sans/mono and still lays out correctly.
-- The bundle is ~466 KB (148 KB gzipped) in one chunk. All content is inlined
+- The bundle is ~530 KB (166 KB gzipped) in one chunk. All content is inlined
   as JSX, so there is nothing to code-split without restructuring the phases
-  into lazy routes.
+  into lazy routes. The 33 widgets added for full topic coverage cost about
+  18 KB gzipped between them, because most share four implementations.

@@ -36,9 +36,20 @@ function resolveBrowser() {
 // literal, not a rendering fault.
 function checkSimulatorFlags() {
   const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "CoreApp.jsx"), "utf8");
-  const widgets = new Set([...src.matchAll(/^function ([A-Z][A-Za-z]*)\(/gm)].map((m) => m[1]));
+  // "Interactive" means a component the reader can change something in, so
+  // the set is built from components that hold state. A static diagram is an
+  // illustration, not a simulator, and must not claim the badge — an earlier
+  // pass counted any component reference and mislabelled seven topics.
+  const widgets = new Set();
+  for (const m of src.matchAll(/^function ([A-Z][A-Za-z]*)\(/gm)) {
+    const from = m.index;
+    const next = src.indexOf("\nfunction ", from + 1);
+    const body = src.slice(from, next < 0 ? src.length : next);
+    if (body.includes("useState")) widgets.add(m[1]);
+  }
   const arrays = ["LOGIC", "HARDWARE", "CLI", "PROGRAMMING", "WEB", "NETWORKING", "SECURITY"];
   const bad = [];
+  const byPhase = {};
   let total = 0;
   let flagged = 0;
 
@@ -63,9 +74,11 @@ function checkSimulatorFlags() {
         if (!id) continue;
         total++;
         const flag = /simulator: true/.test(topic);
-        const renders = /recapSimulator:/.test(topic) ||
+        const rc = (topic.match(/recapSimulator: (?:\(\) => <)?([A-Z][A-Za-z]*)/) || [])[1];
+        const renders = (rc && widgets.has(rc)) ||
           [...topic.matchAll(/<([A-Z][A-Za-z]*)\s*\/>/g)].some((m) => widgets.has(m[1]));
-        if (flag) flagged++;
+        const title = (topic.match(/title: "([^"]+)"/) || [])[1];
+        if (flag) { flagged++; if (title) (byPhase[name] ||= []).push(title); }
         if (flag !== renders) bad.push(`${id}: flag=${flag} but renders=${renders}`);
       }
     }
@@ -73,7 +86,7 @@ function checkSimulatorFlags() {
   if (bad.length) {
     throw new Error("simulator flag out of sync with what renders:\n   " + bad.join("\n   "));
   }
-  return { total, flagged };
+  return { total, flagged, byPhase };
 }
 
 const flags = checkSimulatorFlags();
@@ -175,7 +188,61 @@ if (done.length === 0) throw new Error("completed set is empty after reload");
 await page.screenshot({ path: process.argv[3] || "/tmp/core.png", fullPage: false });
 step("screenshot captured");
 
+
+// ── Every widget must actually mount ───────────────────────────────────────
+// The flag check above is static: it proves the metadata agrees with the
+// source, not that the components render without throwing. Reference mode
+// lays a whole topic out at once, so each can be opened without paging.
+// Scoped per phase and given short timeouts — a locator that misses would
+// otherwise sit on Playwright's 30 s default and turn a failure into a hang.
+const PHASE_OF = {
+  LOGIC: "Logic",
+  HARDWARE: "Hardware",
+  CLI: "Command Line & Operating Systems",
+  PROGRAMMING: "Programming",
+  WEB: "Web Fundamentals",
+  NETWORKING: "Networking & Cisco",
+  SECURITY: "Security & Ethical Hacking",
+};
+const T = { timeout: 4000 };
+const sweep = await ctx.newPage();
+const sweepErrors = [];
+sweep.on("pageerror", (e) => sweepErrors.push(String(e)));
+await sweep.addInitScript(() => {
+  try {
+    window.localStorage.setItem("core-app-progress-v1",
+      JSON.stringify({ completed: {}, reviewItems: {}, readMode: "reference" }));
+  } catch { /* private mode — sweep still runs, just in study mode */ }
+});
+await sweep.goto(URL, { waitUntil: "networkidle" });
+
+let checked = 0;
+const missing = [];
+for (const [key, phaseTitle] of Object.entries(PHASE_OF)) {
+  const titles = flags.byPhase[key] || [];
+  if (!titles.length) continue;
+  await sweep.getByText(phaseTitle, { exact: true }).first().click(T);
+  for (const title of titles) {
+    await sweep.locator("button").filter({ hasText: title }).first().click(T);
+    if ((await sweep.locator("text=/🎮 Interactive/").first().count()) === 0) missing.push(title);
+    checked++;
+    await sweep.getByText("All topics").first().click(T);
+  }
+  await sweep.getByText("All phases").first().click(T).catch(async () => {
+    await sweep.goto(URL, { waitUntil: "networkidle" });
+  });
+}
+if (sweepErrors.length) {
+  throw new Error("a widget threw while rendering:\n   " + sweepErrors.slice(0, 5).join("\n   "));
+}
+if (missing.length) {
+  throw new Error("flagged interactive but rendered no widget:\n   " + missing.join("\n   "));
+}
+step(`every flagged topic renders a widget: ${checked} opened`);
+await sweep.close();
+
 await browser.close();
+
 
 if (warnings.length) {
   console.log(`\nsubresource warnings (not failures): ${warnings.length}`);

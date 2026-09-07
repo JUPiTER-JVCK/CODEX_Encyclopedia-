@@ -671,6 +671,539 @@ const DOM_TREE = {
   ],
 };
 
+
+/* ═══════════════ BESPOKE WIDGETS ═══════════════ */
+/* Eleven topics whose subject has a shape of its own. A generic stepper or
+   grid would technically fit and would teach less, so each of these is built
+   for the one idea it has to land. */
+
+/* ── logic:y2038 — watch a signed 32-bit counter run out of room ── */
+function EpochOverflow() {
+  const { t } = useT();
+  const MAX = 2147483647;
+  const MARKS = [
+    { label: "now-ish", v: 1788000000 },
+    { label: "2030", v: 1893456000 },
+    { label: "1 s before", v: MAX - 1 },
+    { label: "the moment", v: MAX },
+    { label: "1 s after", v: -MAX - 1 },
+  ];
+  const [i, setI] = useState(0);
+  const v = MARKS[i].v;
+  const bits = (v >>> 0).toString(2).padStart(32, "0");
+  const date = new Date(v * 1000).toUTCString();
+  const negative = v < 0;
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Year 2038 Counter</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
+        {MARKS.map((m, k) => <button key={k} onClick={() => setI(k)} style={wBtn(t, k === i)}>{m.label}</button>)}
+      </div>
+      <div style={{ background: t.diagramBg, border: `1px solid ${negative ? t.red : t.border}`, borderRadius: 12, padding: 18 }}>
+        <div style={{ fontFamily: F_MONO, fontSize: 12, color: t.textMuted }}>time_t (signed 32-bit)</div>
+        <div style={{ fontFamily: F_MONO, fontSize: 22, fontWeight: 700, color: negative ? t.red : t.green, margin: "4px 0 12px" }}>{v}</div>
+        <div style={{ fontFamily: F_MONO, fontSize: 11.5, letterSpacing: 1, wordBreak: "break-all", lineHeight: 1.9 }}>
+          <span style={{ color: negative ? t.red : t.textMuted, fontWeight: 700 }}>{bits[0]}</span>
+          <span style={{ color: t.textSecondary }}>{bits.slice(1)}</span>
+        </div>
+        <div style={{ fontFamily: F_MONO, fontSize: 10.5, color: t.textMuted, marginTop: 4 }}>↑ sign bit</div>
+        <div style={{ fontFamily: F_MONO, fontSize: 13.5, color: t.text, marginTop: 14 }}>{date}</div>
+      </div>
+      <div style={wNote(t)}>
+        Nothing overflows in the arithmetic sense — the count just walks into the sign bit. One second
+        past 2 147 483 647 the same 32 bits read as a large negative number, and the date lands in 1901.
+        64-bit <Code>time_t</Code> fixes it; embedded devices that never get a firmware update do not.
+      </div>
+    </div>
+  );
+}
+
+/* ── cli:terminal — build a pipeline and see what flows between stages ── */
+function PipelineComposer() {
+  const { t } = useT();
+  const STAGES = [
+    { cmd: "cat access.log", out: ["200 /index.html", "404 /nope", "200 /app.js", "500 /api", "404 /gone", "200 /index.html"] },
+    { cmd: "grep -v 200", out: ["404 /nope", "500 /api", "404 /gone"] },
+    { cmd: "cut -d' ' -f1", out: ["404", "500", "404"] },
+    { cmd: "sort", out: ["404", "404", "500"] },
+    { cmd: "uniq -c", out: ["2 404", "1 500"] },
+  ];
+  const [n, setN] = useState(1);
+  const out = STAGES[n - 1].out;
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Pipeline Composer</div>
+      <div style={{ fontSize: 12.5, color: t.textMuted, fontFamily: F_BODY, marginBottom: 12 }}>
+        Add stages one at a time. Each command reads the previous one's stdout — it never sees the file, only the stream.
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+        {STAGES.map((s, k) => <button key={k} onClick={() => setN(k + 1)} style={wBtn(t, k < n)}>{k === 0 ? s.cmd : "| " + s.cmd}</button>)}
+      </div>
+      <div style={{ fontFamily: F_MONO, fontSize: 12.5, color: t.accent, background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 14px", overflowX: "auto", whiteSpace: "nowrap" }}>
+        $ {STAGES.slice(0, n).map((s) => s.cmd).join(" | ")}
+      </div>
+      <div style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px", marginTop: 10 }}>
+        <div style={{ fontFamily: F_MONO, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted, marginBottom: 6 }}>stdout · {out.length} line{out.length === 1 ? "" : "s"}</div>
+        {out.map((l, k) => <div key={k} style={{ fontFamily: F_MONO, fontSize: 13, color: t.text, lineHeight: 1.7 }}>{l}</div>)}
+      </div>
+      <div style={wNote(t)}>
+        stderr is a separate stream and does not travel down the pipe — which is why <Code>grep foo 2&gt;/dev/null</Code>
+        silences errors without touching the data. Each stage is its own process; they run at the same time, not one after the other.
+      </div>
+    </div>
+  );
+}
+
+/* ── cli:vim — the modal state machine, driven by real keys ── */
+function VimModes() {
+  const { t } = useT();
+  const MODES = {
+    NORMAL: { color: "blue", desc: "Keys are commands, not text. This is where vim starts and where you return between edits.", keys: [["i", "INSERT", "insert before cursor"], ["a", "INSERT", "append after cursor"], ["v", "VISUAL", "start selecting"], [":", "COMMAND", "type an ex command"], ["dd", "NORMAL", "delete the line"], ["x", "NORMAL", "delete one character"]] },
+    INSERT: { color: "green", desc: "Keys are text. The only special key is Esc — this is the mode people get stuck in.", keys: [["Esc", "NORMAL", "back to commands"], ["any", "INSERT", "types that character"]] },
+    VISUAL: { color: "purple", desc: "Movement extends a selection. Then one operator acts on all of it.", keys: [["Esc", "NORMAL", "cancel the selection"], ["d", "NORMAL", "delete the selection"], ["y", "NORMAL", "yank (copy) it"], ["j k", "VISUAL", "grow the selection"]] },
+    COMMAND: { color: "accent", desc: "A line at the bottom for ex commands — write, quit, substitute, and everything sed-shaped.", keys: [["Esc", "NORMAL", "abandon the command"], [":w", "NORMAL", "write the file"], [":q", "NORMAL", "quit"], [":wq", "NORMAL", "write then quit"]] },
+  };
+  const [mode, setMode] = useState("NORMAL");
+  const [log, setLog] = useState([]);
+  const m = MODES[mode];
+  const press = (key, to, what) => { setMode(to); setLog((l) => [`${key.padEnd(4)} → ${to.padEnd(8)} ${what}`, ...l].slice(0, 5)); };
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Vim Mode Machine</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+        {Object.keys(MODES).map((k) => (
+          <div key={k} style={{ padding: "6px 14px", borderRadius: 8, fontFamily: F_MONO, fontSize: 12.5, fontWeight: 700, background: k === mode ? t[MODES[k].color] : t.surfaceAlt, color: k === mode ? "#fff" : t.textMuted, border: `1px solid ${k === mode ? t[MODES[k].color] : t.border}` }}>{k}</div>
+        ))}
+      </div>
+      <div style={{ background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+        <div style={{ color: t.textSecondary, fontSize: 14, lineHeight: 1.7, fontFamily: F_BODY, marginBottom: 14 }}>{m.desc}</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {m.keys.map(([key, to, what]) => (
+            <button key={key} onClick={() => press(key, to, what)} title={what} style={wBtn(t, false)}>{key}</button>
+          ))}
+        </div>
+      </div>
+      {log.length > 0 && (
+        <div style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 14px", marginTop: 10 }}>
+          {log.map((l, k) => <div key={k} style={{ fontFamily: F_MONO, fontSize: 12, color: k ? t.textMuted : t.text, lineHeight: 1.8, whiteSpace: "pre" }}>{l}</div>)}
+        </div>
+      )}
+      <div style={wNote(t)}>
+        Every key means something different depending on the mode you are in. That is the whole idea, and the whole
+        difficulty: <Code>dd</Code> deletes a line in Normal and types two letters in Insert. Esc is always the way back.
+      </div>
+    </div>
+  );
+}
+
+/* ── cli:scripting — the shell rewrites your line before running it ── */
+function ExpansionOrder() {
+  const { t } = useT();
+  const STAGES = [
+    { name: "what you typed", line: 'echo ~/logs/{app,db}-$ENV.log $(date +%F) *.txt' },
+    { name: "brace expansion", line: 'echo ~/logs/app-$ENV.log ~/logs/db-$ENV.log $(date +%F) *.txt' },
+    { name: "tilde expansion", line: 'echo /home/you/logs/app-$ENV.log /home/you/logs/db-$ENV.log $(date +%F) *.txt' },
+    { name: "parameter expansion", line: 'echo /home/you/logs/app-prod.log /home/you/logs/db-prod.log $(date +%F) *.txt' },
+    { name: "command substitution", line: 'echo /home/you/logs/app-prod.log /home/you/logs/db-prod.log 2026-09-07 *.txt' },
+    { name: "filename expansion", line: 'echo /home/you/logs/app-prod.log /home/you/logs/db-prod.log 2026-09-07 notes.txt todo.txt' },
+  ];
+  const [i, setI] = useState(0);
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Shell Expansion Order</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+        {STAGES.map((s, k) => <button key={k} onClick={() => setI(k)} style={wBtn(t, k === i)}>{k === 0 ? "input" : k}</button>)}
+      </div>
+      <div style={{ fontFamily: F_MONO, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.9, color: t.accent, marginBottom: 8 }}>{i + 1}. {STAGES[i].name}</div>
+      <div style={{ fontFamily: F_MONO, fontSize: 12.5, color: t.text, background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: 1.8 }}>
+        {STAGES[i].line}
+      </div>
+      <div style={wNote(t)}>
+        The command never sees what you typed — it receives the finished list of arguments. Order matters:
+        globbing runs <em>last</em>, so <Code>$FILES</Code> holding <Code>*.txt</Code> still expands, while quoting
+        <Code> "$FILES"</Code> stops it. Most surprising shell behaviour is this list running in a different order than expected.
+      </div>
+    </div>
+  );
+}
+
+/* ── programming:fundamentals — what a value actually is ── */
+function TypeInspector() {
+  const { t } = useT();
+  const VALUES = [
+    { lit: '42', type: "number", truthy: true, note: "Every JS number is a 64-bit float. 42 and 42.0 are the same value." },
+    { lit: '0', type: "number", truthy: false, note: "Zero is falsy — the classic bug when a count of 0 is treated as 'missing'." },
+    { lit: '"0"', type: "string", truthy: true, note: "A non-empty string is truthy, even when it looks like a falsy number." },
+    { lit: '""', type: "string", truthy: false, note: "The empty string is falsy. So is every other empty-ish primitive." },
+    { lit: '[]', type: "object", truthy: true, note: "An empty array is truthy — but `[] == false` is true, because == converts it to \"\" first." },
+    { lit: '{}', type: "object", truthy: true, note: "typeof gives \"object\" for arrays, null and objects alike. It is a blunt instrument." },
+    { lit: 'null', type: "object", truthy: false, note: "typeof null === \"object\" is a bug from 1995, kept forever for compatibility." },
+    { lit: 'undefined', type: "undefined", truthy: false, note: "What you get from a missing property or a parameter nobody passed." },
+    { lit: 'NaN', type: "number", truthy: false, note: "Not-a-Number is a number. It is also the only value not equal to itself." },
+  ];
+  const [i, setI] = useState(0);
+  const v = VALUES[i];
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Value Inspector</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+        {VALUES.map((x, k) => <button key={k} onClick={() => setI(k)} style={wBtn(t, k === i)}>{x.lit}</button>)}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+        {[["value", v.lit], ["typeof", v.type], ["truthy?", v.truthy ? "true" : "false"]].map(([k, val]) => (
+          <div key={k} style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 13px" }}>
+            <div style={{ fontFamily: F_MONO, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted }}>{k}</div>
+            <div style={{ fontFamily: F_MONO, fontSize: 15, fontWeight: 700, color: k === "truthy?" ? (v.truthy ? t.green : t.red) : t.text, marginTop: 3 }}>{val}</div>
+          </div>
+        ))}
+      </div>
+      <div style={wNote(t)}>{v.note}</div>
+    </div>
+  );
+}
+
+/* ── programming:functions — frames pushed and popped ── */
+function CallStackVisualizer() {
+  const { t } = useT();
+  const FRAMES = [
+    { stack: ["main()"], say: "main starts. One frame, holding its own local variables." },
+    { stack: ["main()", "total(cart)"], say: "main calls total(). A new frame is pushed on top with its own locals — cart is a parameter, not a shared variable." },
+    { stack: ["main()", "total(cart)", "price(item)"], say: "total calls price(). Frames stack. Only the top frame runs; the ones beneath are paused mid-line." },
+    { stack: ["main()", "total(cart)", "price(item)", "tax(p)"], say: "price calls tax(). Four frames deep. Every nested call costs stack space — this is what a stack overflow runs out of." },
+    { stack: ["main()", "total(cart)", "price(item)"], say: "tax returns a value. Its frame is popped and its locals are gone. price resumes exactly where it paused." },
+    { stack: ["main()", "total(cart)"], say: "price returns. Same again — the caller continues on the line after the call." },
+    { stack: ["main()"], say: "total returns the sum. Back to one frame." },
+    { stack: [], say: "main returns. The stack is empty and the program ends." },
+  ];
+  const [i, setI] = useState(0);
+  const f = FRAMES[i];
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Call Stack</div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
+        <button onClick={() => setI(Math.max(0, i - 1))} style={{ ...wBtn(t, false), opacity: i === 0 ? 0.4 : 1 }}>◀ Prev</button>
+        <button onClick={() => setI(Math.min(FRAMES.length - 1, i + 1))} style={{ ...wBtn(t, i < FRAMES.length - 1), opacity: i === FRAMES.length - 1 ? 0.4 : 1 }}>Next ▶</button>
+        <span style={{ fontFamily: F_MONO, fontSize: 12, color: t.textMuted }}>{i + 1} / {FRAMES.length}</span>
+      </div>
+      <div style={{ background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16, minHeight: 150, display: "flex", flexDirection: "column-reverse", justifyContent: "flex-end", gap: 6 }}>
+        {f.stack.length === 0 && <div style={{ fontFamily: F_MONO, fontSize: 13, color: t.textMuted }}>(stack empty)</div>}
+        {f.stack.map((fr, k) => (
+          <div key={k} style={{ fontFamily: F_MONO, fontSize: 13, padding: "8px 13px", borderRadius: 8, background: k === f.stack.length - 1 ? t.accentSoft : t.surfaceAlt, border: `1px solid ${k === f.stack.length - 1 ? t.accent : t.border}`, color: t.text }}>
+            {fr}{k === f.stack.length - 1 ? "   ◀ running" : "   (paused)"}
+          </div>
+        ))}
+      </div>
+      <div style={wNote(t)}>{f.say}</div>
+    </div>
+  );
+}
+
+/* ── web:js-browser — the event loop, which is why order surprises people ── */
+function EventLoopVisualizer() {
+  const { t, view } = useT();
+  const SNIPPET = ['console.log("A");', 'setTimeout(() => console.log("B"), 0);', 'Promise.resolve().then(() => console.log("C"));', 'console.log("D");'];
+  const TICKS = [
+    { stack: ["main"], micro: [], macro: [], out: [], say: "The script itself is the first task. It runs top to bottom, uninterrupted." },
+    { stack: ["main", 'log("A")'], micro: [], macro: [], out: ["A"], say: "Line 1 runs synchronously and prints immediately." },
+    { stack: ["main"], micro: [], macro: ['log("B")'], out: ["A"], say: "setTimeout does not wait. It hands the callback to the timer and returns at once — even with 0 ms." },
+    { stack: ["main"], micro: ['log("C")'], macro: ['log("B")'], out: ["A"], say: "A resolved promise queues its .then on the microtask queue — a different, higher-priority queue." },
+    { stack: ["main", 'log("D")'], micro: ['log("C")'], macro: ['log("B")'], out: ["A", "D"], say: "Line 4 is still synchronous, so D prints before anything queued." },
+    { stack: [], micro: ['log("C")'], macro: ['log("B")'], out: ["A", "D"], say: "The script finishes and the stack empties. Only now can queued work run." },
+    { stack: ['log("C")'], micro: [], macro: ['log("B")'], out: ["A", "D", "C"], say: "Microtasks drain first, and completely, before any macrotask. C prints." },
+    { stack: ['log("B")'], micro: [], macro: [], out: ["A", "D", "C", "B"], say: "Only now does the timer callback run. Final order: A D C B — not the order it was written." },
+  ];
+  const [i, setI] = useState(0);
+  const s = TICKS[i];
+  const col = (title, items, tint) => (
+    <div style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 12px", minHeight: 84 }}>
+      <div style={{ fontFamily: F_MONO, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: tint, marginBottom: 6 }}>{title}</div>
+      {items.length === 0 && <div style={{ fontFamily: F_MONO, fontSize: 12, color: t.textMuted }}>empty</div>}
+      {items.map((x, k) => <div key={k} style={{ fontFamily: F_MONO, fontSize: 12.5, color: t.text, lineHeight: 1.7 }}>{x}</div>)}
+    </div>
+  );
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Event Loop</div>
+      <div style={{ fontFamily: F_MONO, fontSize: 12, background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, overflowX: "auto" }}>
+        {SNIPPET.map((l, k) => <div key={k} style={{ color: t.textSecondary, lineHeight: 1.8, whiteSpace: "pre" }}>{l}</div>)}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, alignItems: "center" }}>
+        <button onClick={() => setI(Math.max(0, i - 1))} style={{ ...wBtn(t, false), opacity: i === 0 ? 0.4 : 1 }}>◀ Prev</button>
+        <button onClick={() => setI(Math.min(TICKS.length - 1, i + 1))} style={{ ...wBtn(t, i < TICKS.length - 1), opacity: i === TICKS.length - 1 ? 0.4 : 1 }}>Next ▶</button>
+        <span style={{ fontFamily: F_MONO, fontSize: 12, color: t.textMuted }}>{i + 1} / {TICKS.length}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: view === "mobile" ? "1fr" : "repeat(4,1fr)", gap: 10 }}>
+        {col("call stack", s.stack, t.accent)}
+        {col("microtasks", s.micro, t.purple)}
+        {col("macrotasks", s.macro, t.blue)}
+        {col("output", s.out, t.green)}
+      </div>
+      <div style={wNote(t)}>{s.say}</div>
+    </div>
+  );
+}
+
+/* ── web:sql — a query is a filter over rows, not a loop ── */
+function QueryBuilder() {
+  const { t } = useT();
+  const ROWS = [
+    { id: 1, name: "Ada", city: "London", orders: 3 },
+    { id: 2, name: "Linus", city: "Helsinki", orders: 0 },
+    { id: 3, name: "Grace", city: "New York", orders: 7 },
+    { id: 4, name: "Alan", city: "London", orders: 1 },
+    { id: 5, name: "Radia", city: "New York", orders: 5 },
+  ];
+  const [cols, setCols] = useState(["name", "city", "orders"]);
+  const [where, setWhere] = useState("none");
+  const [order, setOrder] = useState("none");
+  const WHERES = { none: () => true, "city = 'London'": (r) => r.city === "London", "orders > 2": (r) => r.orders > 2, "orders = 0": (r) => r.orders === 0 };
+  let out = ROWS.filter(WHERES[where]);
+  if (order === "orders DESC") out = [...out].sort((a, b) => b.orders - a.orders);
+  if (order === "name ASC") out = [...out].sort((a, b) => a.name.localeCompare(b.name));
+  // Rebuild from the canonical order so toggling never scrambles the columns.
+  const ALL_COLS = ["name", "city", "orders"];
+  const toggle = (c) => setCols((s) => ALL_COLS.filter((x) => (x === c ? !s.includes(c) : s.includes(x))));
+  const sql = `SELECT ${cols.length ? cols.join(", ") : "*"}\nFROM customers${where === "none" ? "" : `\nWHERE ${where}`}${order === "none" ? "" : `\nORDER BY ${order}`};`;
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Query Builder</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {ALL_COLS.map((c) => <button key={c} onClick={() => toggle(c)} style={wBtn(t, cols.includes(c))}>{c}</button>)}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {Object.keys(WHERES).map((w) => <button key={w} onClick={() => setWhere(w)} style={wBtn(t, w === where)}>{w === "none" ? "no WHERE" : "WHERE " + w}</button>)}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {["none", "orders DESC", "name ASC"].map((o) => <button key={o} onClick={() => setOrder(o)} style={wBtn(t, o === order)}>{o === "none" ? "no ORDER BY" : "ORDER BY " + o}</button>)}
+      </div>
+      <div style={{ fontFamily: F_MONO, fontSize: 12.5, color: t.accent, background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 10, padding: "12px 14px", whiteSpace: "pre", overflowX: "auto" }}>{sql}</div>
+      <div style={{ overflowX: "auto", marginTop: 10 }}>
+        <table style={{ borderCollapse: "collapse", width: "100%", fontSize: 13 }}>
+          <thead><tr>{(cols.length ? cols : ["id", "name", "city", "orders"]).map((c) => (
+            <th key={c} style={{ textAlign: "left", padding: "8px 12px", fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted, borderBottom: `2px solid ${t.border}` }}>{c}</th>
+          ))}</tr></thead>
+          <tbody>{out.map((r) => (
+            <tr key={r.id}>{(cols.length ? cols : ["id", "name", "city", "orders"]).map((c) => (
+              <td key={c} style={{ padding: "8px 12px", borderBottom: `1px solid ${t.border}`, color: t.text, fontFamily: F_MONO, fontSize: 12.5 }}>{String(r[c])}</td>
+            ))}</tr>
+          ))}</tbody>
+        </table>
+      </div>
+      <div style={{ fontFamily: F_MONO, fontSize: 11.5, color: t.textMuted, marginTop: 8 }}>{out.length} row{out.length === 1 ? "" : "s"} of {ROWS.length}</div>
+      <div style={wNote(t)}>
+        You never tell SQL how to find the rows — only which rows you want. WHERE narrows, ORDER BY arranges,
+        and SELECT picks columns from whatever survived. The database decides the actual strategy.
+      </div>
+    </div>
+  );
+}
+
+/* ── networking:topologies — cut a link and see what survives ── */
+function TopologyExplorer() {
+  const { t, view } = useT();
+  const TOPOS = {
+    Star: { art: ["      B", "      │", "  A ──H── C", "      │", "      D"], cut: "Cut a spoke and one host drops. Cut at the hub and everything drops — the hub is a single point of failure.", cable: "n cables", cost: "cheap to add a host" },
+    Bus: { art: ["  A   B   C   D", "  │   │   │   │", "  └───┴───┴───┘", "     one segment"], cut: "One break splits the segment in two and usually kills the whole bus. Every host also shares the same bandwidth.", cable: "1 cable", cost: "cheap, obsolete" },
+    Ring: { art: ["    A ── B", "    │      │", "    D ── C"], cut: "One break and traffic reroutes the other way — a dual ring survives it. Two breaks isolate a segment.", cable: "n cables", cost: "resilient to one fault" },
+    Mesh: { art: ["    A ─── B", "    │ ╳ │", "    D ─── C"], cut: "Every host has several paths. You can cut multiple links and still deliver — at the cost of far more cabling.", cable: "n(n−1)/2 cables", cost: "expensive, very resilient" },
+  };
+  const [k, setK] = useState("Star");
+  const s = TOPOS[k];
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Topology Explorer</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
+        {Object.keys(TOPOS).map((n) => <button key={n} onClick={() => setK(n)} style={wBtn(t, n === k)}>{n}</button>)}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: view === "mobile" ? "1fr" : "auto 1fr", gap: 18, alignItems: "center" }}>
+        <pre style={{ fontFamily: F_MONO, fontSize: 13, lineHeight: 1.7, color: t.text, background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 10, padding: "14px 18px", margin: 0 }}>{s.art.join("\n")}</pre>
+        <div>
+          <div style={{ color: t.textSecondary, fontSize: 14.5, lineHeight: 1.75, fontFamily: F_BODY }}>{s.cut}</div>
+          <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+            {[["cabling", s.cable], ["trade-off", s.cost]].map(([a, b]) => (
+              <div key={a} style={{ background: t.surfaceAlt, border: `1px solid ${t.border}`, borderRadius: 9, padding: "8px 12px" }}>
+                <div style={{ fontFamily: F_MONO, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted }}>{a}</div>
+                <div style={{ fontFamily: F_MONO, fontSize: 12.5, color: t.text, marginTop: 2 }}>{b}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={wNote(t)}>
+        Real networks are star-wired physically — every host to a switch — while behaving like a bus logically,
+        because a switch forwards frames between all its ports. Physical and logical topology are separate questions.
+      </div>
+    </div>
+  );
+}
+
+/* ── networking:ccna — VLANs partition one switch into several ── */
+function VlanLab() {
+  const { t, view } = useT();
+  const HOSTS = [{ h: "PC-A", p: "Fa0/1" }, { h: "PC-B", p: "Fa0/2" }, { h: "PC-C", p: "Fa0/3" }, { h: "PC-D", p: "Fa0/4" }];
+  const [vlan, setVlan] = useState({ "Fa0/1": 10, "Fa0/2": 10, "Fa0/3": 20, "Fa0/4": 20 });
+  const [from, setFrom] = useState("Fa0/1");
+  const cycle = (p) => setVlan((s) => ({ ...s, [p]: s[p] === 10 ? 20 : s[p] === 20 ? 30 : 10 }));
+  const tint = (v) => (v === 10 ? t.blue : v === 20 ? t.green : t.purple);
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · VLAN Lab</div>
+      <div style={{ fontSize: 12.5, color: t.textMuted, fontFamily: F_BODY, marginBottom: 12 }}>
+        Click a port to move it between VLANs. Pick a source host to see who it can reach.
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: view === "mobile" ? "1fr" : "repeat(4,1fr)", gap: 10 }}>
+        {HOSTS.map(({ h, p }) => {
+          const v = vlan[p];
+          const reachable = v === vlan[from];
+          const isSrc = p === from;
+          return (
+            <div key={p} style={{ border: `1px solid ${isSrc ? t.accent : tint(v)}`, background: isSrc ? t.accentSoft : t.surfaceAlt, borderRadius: 11, padding: "12px 13px" }}>
+              <div style={{ fontFamily: F_MONO, fontSize: 13, fontWeight: 700, color: t.text }}>{h}</div>
+              <div style={{ fontFamily: F_MONO, fontSize: 11, color: t.textMuted, marginBottom: 8 }}>{p}</div>
+              <button onClick={() => cycle(p)} style={{ ...wBtn(t, false), background: tint(v), color: "#fff", border: `1px solid ${tint(v)}`, width: "100%" }}>VLAN {v}</button>
+              <button onClick={() => setFrom(p)} style={{ ...wBtn(t, isSrc), width: "100%", marginTop: 6 }}>{isSrc ? "source" : "set source"}</button>
+              <div style={{ fontFamily: F_MONO, fontSize: 11.5, marginTop: 8, color: isSrc ? t.textMuted : reachable ? t.green : t.red }}>
+                {isSrc ? "—" : reachable ? "✓ reachable" : "✗ unreachable"}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={wNote(t)}>
+        One physical switch, several broadcast domains. Two ports in different VLANs cannot reach each other at all
+        without a router or an SVI doing inter-VLAN routing — moving a cable does nothing; the separation is in configuration.
+      </div>
+    </div>
+  );
+}
+
+/* ── security:social-network-attacks — read the headers, not the vibe ── */
+function PhishingInspector() {
+  const { t } = useT();
+  const FLAGS = [
+    { id: "from", label: "From: IT Support <it-support@rnicrosoft-support.com>", why: "Look at the domain character by character: 'rn' impersonating 'm'. Homoglyph domains survive a glance and fail a read." },
+    { id: "reply", label: "Reply-To: helpdesk.recovery@gmail.com", why: "The reply address does not match the sender's domain. Real corporate mail almost never asks you to reply to free webmail." },
+    { id: "subject", label: "Subject: [URGENT] Your account will be disabled in 2 hours", why: "Manufactured time pressure. Urgency is the whole technique — it exists to stop you checking." },
+    { id: "greeting", label: "Dear Valued User,", why: "A generic greeting in mail that claims to be from your own IT department, which knows your name." },
+    { id: "link", label: "https://micros0ft-verify.com/login?id=8823", why: "Zero for 'o', and a domain that is not the company's. Hover before clicking — the visible text and the real href are different things." },
+    { id: "ask", label: "Confirm your password to keep access.", why: "No legitimate IT department asks for a password. Not by mail, not by phone, not ever." },
+    { id: "sig", label: "— Sent from IT. Do not reply to this automated message.", why: "Tries to close the loop that would expose it: it discourages the one action that would reach the real IT desk." },
+  ];
+  const [found, setFound] = useState([]);
+  const [sel, setSel] = useState(null);
+  const click = (f) => { setSel(f); setFound((s) => (s.includes(f.id) ? s : [...s, f.id])); };
+  return (
+    <div style={wCard(t)}>
+      <div style={wEyebrow(t)}>🎮 Interactive · Phishing Inspector</div>
+      <div style={{ fontSize: 12.5, color: t.textMuted, fontFamily: F_BODY, marginBottom: 12 }}>
+        Seven things are wrong with this message. Click each one you can spot. {found.length}/{FLAGS.length} found.
+      </div>
+      <div style={{ background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
+        {FLAGS.map((f) => (
+          <div key={f.id} onClick={() => click(f)} style={{ fontFamily: F_MONO, fontSize: 12.5, lineHeight: 1.9, cursor: "pointer", padding: "3px 7px", borderRadius: 6, color: found.includes(f.id) ? t.red : t.textSecondary, background: sel && sel.id === f.id ? t.redSoft : "transparent", textDecoration: found.includes(f.id) ? "underline" : "none", wordBreak: "break-word" }}>
+            {f.label}
+          </div>
+        ))}
+      </div>
+      {sel && (
+        <div style={{ background: t.surfaceAlt, border: `1px solid ${t.red}`, borderRadius: 10, padding: "12px 15px", marginTop: 12 }}>
+          <div style={{ fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.9, color: t.red, marginBottom: 5 }}>red flag</div>
+          <div style={{ color: t.textSecondary, fontSize: 14, lineHeight: 1.7, fontFamily: F_BODY }}>{sel.why}</div>
+        </div>
+      )}
+      <div style={wNote(t)}>
+        {found.length === FLAGS.length
+          ? "All seven. Notice that none of them required a tool — every one is visible in the message itself, if you slow down enough to read it."
+          : "Phishing does not defeat technical controls; it defeats a person moving quickly. The countermeasure is a habit, not a product."}
+      </div>
+    </div>
+  );
+}
+
+
+/* ── Seven topics that had a static diagram but nothing to manipulate ── */
+
+const STEP_FULLSTACK = [
+  { label: "You press a key", detail: "A mechanical switch closes. At this instant the letter exists only as a voltage change on a matrix line.", state: [["Layer", "01 Circuit Board"], ["Form", "voltage"]] },
+  { label: "Controller scans it", detail: "The keyboard's microcontroller finds which row and column closed, and turns that into a scancode — a number, not a letter.", state: [["Layer", "02 CPU / MCU"], ["Form", "scancode 0x1E"]] },
+  { label: "USB carries it", detail: "The scancode travels as a HID report over a serial bus with its own framing, checksums and timing.", state: [["Layer", "01 → 04"], ["Form", "HID report"]] },
+  { label: "Driver interprets it", detail: "The OS driver turns the scancode into a keycode and raises an interrupt so the kernel knows input arrived.", state: [["Layer", "04 Device Drivers"], ["Form", "keycode"]] },
+  { label: "Kernel routes it", detail: "The kernel decides which process has focus and delivers the event to that process's input queue.", state: [["Layer", "05 OS Kernel"], ["Form", "input event"]] },
+  { label: "Toolkit makes a character", detail: "Layout and modifier state finally decide this is the letter 'a' — the same scancode is a different letter on a different layout.", state: [["Layer", "06 → 07"], ["Form", "'a' (U+0061)"]] },
+  { label: "Application shows it", detail: "The app inserts the character, re-lays out the text and asks for a repaint. Only now does anything appear.", state: [["Layer", "08 Applications"], ["Form", "a glyph on screen"]] },
+];
+
+const CG_CASESTUDIES = {
+  headers: ["Device", "What dominates the design", "CPU class", "Power budget", "Failure cost"],
+  rows: [
+    ["Smartphone", "battery life and thermals in a sealed case", "ARM big.LITTLE SoC", "1–5 W", "annoying"],
+    ["Laptop", "balance of speed, heat and battery", "x86 or ARM, 15–45 W", "15–45 W", "annoying"],
+    ["Desktop / workstation", "raw throughput, cooling is easy", "x86, 65–250 W", "65–250 W+", "annoying"],
+    ["Server", "throughput per watt per rack unit", "many-core Xeon / EPYC", "100–400 W", "expensive"],
+    ["Microcontroller", "cost, determinism and sleep current", "Cortex-M, RISC-V", "µW–100 mW", "varies"],
+    ["Spacecraft / medical", "radiation tolerance, provability", "rad-hard, decades old", "watts", "catastrophic"],
+  ],
+};
+
+const CG_DATASTRUCTURES = {
+  headers: ["Structure", "Lookup", "Insert", "Ordered?", "Use it when"],
+  rows: [
+    ["Array / list", "O(1) by index, O(n) by value", "O(n) in the middle", "yes, by position", "you index by position and iterate a lot"],
+    ["Hash map", "O(1) average", "O(1) average", "no", "you look things up by key"],
+    ["Linked list", "O(n)", "O(1) once located", "yes, by position", "you splice constantly and never index"],
+    ["Binary search tree", "O(log n)", "O(log n)", "yes, by key", "you need sorted order and fast lookup"],
+    ["Stack", "top only", "O(1) push", "LIFO", "you need the most recent thing — undo, call frames"],
+    ["Queue", "front only", "O(1) enqueue", "FIFO", "you need the oldest thing — jobs, buffers"],
+    ["Set", "O(1) average", "O(1) average", "no", "membership is the only question you ask"],
+  ],
+};
+
+const CG_JSC = {
+  headers: ["Aspect", "C", "JavaScript", "Why the gap"],
+  rows: [
+    ["Compiled or not", "ahead of time, to machine code", "JIT compiled at runtime", "C knows the machine; JS must run anywhere"],
+    ["Typing", "static, checked at compile time", "dynamic, checked as it runs", "C needs sizes up front to lay out memory"],
+    ["Memory", "you malloc and you free", "garbage collected", "manual control versus not leaking by default"],
+    ["Out-of-bounds read", "undefined behaviour, maybe a CVE", "undefined, harmlessly", "C trusts you; JS bounds-checks everything"],
+    ["Startup", "microseconds", "milliseconds — parse, then warm up", "the JIT has to see code run before optimising"],
+    ["Where it runs", "wherever there is a compiler", "wherever there is a browser", "different definitions of portable"],
+  ],
+};
+
+const STEP_OSI = [
+  { label: "Application data", detail: "Your program has a message to send — an HTTP GET. At this point it is just bytes with meaning to the app.", state: [["Layer", "7 Application"], ["Unit", "data"], ["Added", "—"]] },
+  { label: "Transport wraps it", detail: "TCP prepends a header with source and destination ports and a sequence number. The message becomes a segment.", state: [["Layer", "4 Transport"], ["Unit", "segment"], ["Added", "ports, seq"]] },
+  { label: "Network wraps that", detail: "IP prepends source and destination addresses and a TTL. The segment becomes a packet — now routable across networks.", state: [["Layer", "3 Network"], ["Unit", "packet"], ["Added", "IP addrs, TTL"]] },
+  { label: "Data link wraps that", detail: "Ethernet prepends MAC addresses and appends a checksum. The packet becomes a frame, addressed to the next hop only.", state: [["Layer", "2 Data Link"], ["Unit", "frame"], ["Added", "MACs, FCS"]] },
+  { label: "Physical sends it", detail: "The frame becomes voltage, light or radio. Nothing about the original message is recognisable in the signal.", state: [["Layer", "1 Physical"], ["Unit", "bits"], ["Added", "line coding"]] },
+  { label: "The receiver undoes it", detail: "Each layer strips exactly the header its counterpart added, in reverse. The app receives the same bytes it was sent, with none of the wrapping.", state: [["Direction", "up the stack"], ["Unit", "data again"], ["Removed", "every header"]] },
+];
+
+const CG_PORTS = {
+  headers: ["Port", "Service", "Transport", "Encrypted?", "What it tells an attacker"],
+  rows: [
+    ["22", "SSH", "TCP", "yes", "remote admin exists — brute-force target"],
+    ["25", "SMTP", "TCP", "opportunistic", "a mail server, maybe an open relay"],
+    ["53", "DNS", "UDP + TCP", "usually not", "a resolver; maybe recursion for anyone"],
+    ["80", "HTTP", "TCP", "no", "a web app, and traffic readable in transit"],
+    ["443", "HTTPS", "TCP", "yes", "a web app — the interesting surface today"],
+    ["445", "SMB", "TCP", "partly", "Windows file sharing; historically a rich target"],
+    ["3389", "RDP", "TCP", "yes", "remote desktop exposed — a common entry point"],
+  ],
+};
+
+const CG_HATS = {
+  headers: ["Actor", "Authorisation", "Motive", "Typical outcome"],
+  rows: [
+    ["White hat", "written, scoped, in advance", "improve the defence", "a report the owner acts on"],
+    ["Black hat", "none", "money, disruption, leverage", "a crime"],
+    ["Grey hat", "none, but no malice claimed", "curiosity, reputation", "still illegal in most jurisdictions"],
+    ["Red team", "written, adversarial, broad", "test detection and response", "the blue team learns what it missed"],
+    ["Blue team", "employed to defend", "detect and respond", "faster containment next time"],
+    ["Purple team", "both, working together", "close the feedback loop", "detections written the same week"],
+  ],
+};
+
 const TOPICS_LOGIC = [
   {
     id: "logic:boolean",
@@ -1114,6 +1647,8 @@ result   = 00000100   → non-zero, so the flag IS set`}</Code>
     ],
     retrieval: { q: "Why does the Year 2038 problem happen at exactly that date?", a: "A 32-bit signed integer counting seconds since 1970 runs out of room and overflows" },
     recap: ["Unix time counts seconds since Jan 1, 1970", "A 32-bit signed integer maxes out at 2,147,483,647", "That limit is reached on Jan 19, 2038 — one second later, the value overflows to a negative number", "This is exactly why understanding binary number representation has real, dated consequences", "Two's complement overflow wraps silently to the most negative value — it doesn't crash, it becomes confidently wrong", "This is one of several fixed-width rollover bugs, alongside GPS week rollover and the 2036 NTP rollover"],
+    simulator: true,
+    recapSimulator: EpochOverflow,
   },
   {
     id: "logic:simplification",
@@ -1387,6 +1922,7 @@ const TOPICS_HARDWARE = [
     retrieval: { q: "What is the one job every layer in the stack shares?", a: "Hiding the complexity of the layer below it from the layer above it" },
     recap: ["A running computer is a stack of layers, each hiding the one below it", "Firmware (BIOS/UEFI) runs first and hands off to a bootloader, which loads the OS", "The kernel manages hardware on behalf of programs via system calls", "Drivers translate between the kernel and specific hardware devices", "Libraries and frameworks sit above the kernel; applications sit at the very top"],
     simulator: true,
+    recapSimulator: () => <StepThrough name="One Keystroke Through the Stack" steps={STEP_FULLSTACK} note="Seven layers, one letter. Every layer only knows how to talk to the two beside it." />,
   },
   {
     id: "hardware:cpu",
@@ -1642,6 +2178,7 @@ const TOPICS_HARDWARE = [
     retrieval: { q: "What's the general tradeoff between lower and higher frequency wireless signals?", a: "Lower frequency = longer range and better penetration; higher frequency = more bandwidth but shorter range" },
     recap: ["A softmodem does a hardware job (signal modulation) in software, trading cost for reliability and CPU overhead", "Moving a job from dedicated hardware to general-purpose software is a recurring tradeoff throughout computing", "All wireless communication encodes data onto electromagnetic waves — WiFi, Bluetooth, and radio all share this same physics", "Different wireless bands trade off range, speed, and obstacle penetration", "Hardware sets the physical limits; software negotiates around them — the theme connecting every phase ahead"],
     simulator: true,
+    recapSimulator: () => <CompareGrid name="What Shapes a Machine" headers={CG_CASESTUDIES.headers} rows={CG_CASESTUDIES.rows} note="Click Power budget: nearly every other difference on this table follows from that one number." />,
   },
 ];
 /* ══════════════════════ INTERACTIVE: CHMOD PERMISSIONS CALCULATOR ══════════════════════ */
@@ -1763,6 +2300,8 @@ const TOPICS_CLI = [
     ],
     retrieval: { q: "What does a pipe (|) do between two commands?", a: "Sends the first command's output directly into the second command's input" },
     recap: ["The terminal offers precision, scriptability, and remote access a GUI can't match", "pwd/cd/ls cover navigation; mkdir/cp/mv/rm cover manipulation", "rm -rf deletes permanently with no confirmation — always check pwd first", "Pipes (|) chain small commands together; > and >> redirect output to files", "PowerShell follows the same philosophy as bash/zsh with different command names"],
+    simulator: true,
+    recapSimulator: PipelineComposer,
   },
   {
     id: "cli:filesystem",
@@ -1867,6 +2406,8 @@ const TOPICS_CLI = [
     ],
     retrieval: { q: "What do you type to save and quit vim in one step?", a: ":wq" },
     recap: ["Vim is modal — Normal mode issues commands, Insert mode types text", "hjkl move the cursor; w/b move by word; gg/G jump to top/bottom", "Editing commands compose as operator + motion, e.g. dw = delete word, dd = delete line", ":%s/old/new/g finds and replaces across the whole file", ":w saves, :q quits, :wq does both, :q! discards changes and quits"],
+    simulator: true,
+    recapSimulator: VimModes,
   },
   {
     id: "cli:git",
@@ -2003,6 +2544,8 @@ fi`}</Code>
     ],
     retrieval: { q: "What line must appear first in a bash script to tell the system which interpreter to use?", a: "The shebang line (e.g. #!/bin/bash)" },
     recap: ["A script needs a shebang line and execute permission (chmod +x) to run", "Variables use $name; $1, $2 etc. refer to arguments passed to the script", "if/else and for loops give scripts real control flow", "Functions group reusable logic, with their own local $1", "A real script is just these pieces composed together toward one useful task"],
+    simulator: true,
+    recapSimulator: ExpansionOrder,
   },
   {
     id: "cli:packages",
@@ -2226,6 +2769,8 @@ tip = bill * 0.15`}</Code>
     ],
     retrieval: { q: "Why does adding two numbers behave differently from adding two strings?", a: "Their types are different — types define which operations mean what for that kind of value" },
     recap: ["A program is a sequence of instructions — the human-readable version of fetch-decode-execute", "Variables are named locations that hold and can change a value", "Every value has a type (integer, float, string, boolean) that determines what operations mean for it", "Expressions evaluate to a value, using the same comparison/boolean operators from Logic", "Comments explain code to humans and are ignored by the language itself"],
+    simulator: true,
+    recapSimulator: TypeInspector,
   },
   {
     id: "programming:control-flow",
@@ -2360,6 +2905,8 @@ def add_to_total(x):
     ],
     retrieval: { q: "What must every recursive function have to avoid running forever?", a: "A base case — a condition where it stops calling itself" },
     recap: ["Functions package reusable logic under a name, taking parameters and often returning a value", "Local variables only exist inside the function that created them; global variables exist everywhere", "Recursion is a function calling itself, and needs a base case to eventually stop", "Pure functions always return the same output for the same input and affect nothing external", "Impure functions depend on or change something outside themselves, which makes them harder to reason about"],
+    simulator: true,
+    recapSimulator: CallStackVisualizer,
   },
   {
     id: "programming:data-structures",
@@ -2418,6 +2965,7 @@ users[0]["name"]   # "Alice"`}</Code>
     retrieval: { q: "When would you reach for a dictionary instead of a list?", a: "When you want to look values up by a meaningful name (key) rather than by numeric position" },
     recap: ["A list holds ordered values, accessed by numeric index starting at 0", "A dictionary holds values accessed by a meaningful key instead of position", "Choose based on whether order or meaningful naming matters more for your data", "Structures nest — a list of dictionaries is an extremely common real-world shape", "JSON, used constantly on the web, is exactly this same nested shape written as text"],
     simulator: true,
+    recapSimulator: () => <CompareGrid name="Structure Trade-offs" headers={CG_DATASTRUCTURES.headers} rows={CG_DATASTRUCTURES.rows} note="Click Lookup, then Insert. No structure wins both — choosing one is choosing which operation you do most." />,
   },
   {
     id: "programming:python",
@@ -2534,6 +3082,7 @@ int main() {
     retrieval: { q: "What's the fundamental tradeoff between a compiled language like C and an interpreted one like Python?", a: "Compiled code runs faster but needs a build step; interpreted code runs instantly but slower" },
     recap: ["JavaScript is the only language every browser runs natively, and is comparatively forgiving about syntax", "Asynchronous JavaScript lets slow operations run without freezing the whole page", "C compiles directly to machine code and requires explicit type declarations", "Pointers hold memory addresses directly; C requires manually requesting and freeing memory", "Python and JavaScript use garbage collection to automate memory management that C leaves to the programmer"],
     simulator: true,
+    recapSimulator: () => <CompareGrid name="C and JavaScript" headers={CG_JSC.headers} rows={CG_JSC.rows} />,
   },
 ];
 /* ══════════════════════ INTERACTIVE: CSS BOX MODEL VISUALIZER ══════════════════════ */
@@ -2776,6 +3325,8 @@ button.addEventListener("click", () => {
     ],
     retrieval: { q: "When JavaScript changes a page, what is it actually editing?", a: "The live in-memory DOM tree, not the original HTML file" },
     recap: ["The DOM is a live, in-memory tree the browser builds from your HTML", "JavaScript edits the DOM directly, and the browser redraws instantly to match", "querySelector uses the same selector syntax as CSS", "Event listeners run a function in response to clicks, keystrokes, and other events", "fetch requests data from a server without reloading the page — the same request-response cycle Networking covers in depth"],
+    simulator: true,
+    recapSimulator: EventLoopVisualizer,
   },
   {
     id: "web:page-load",
@@ -2917,6 +3468,8 @@ DELETE FROM users WHERE name = "Alice";`}</Code>
     ],
     retrieval: { q: "What single mistake turns an UPDATE or DELETE into a mistake affecting the entire table?", a: "Forgetting the WHERE clause" },
     recap: ["A relational database stores data in tables of rows and columns; SQL queries and changes that data", "SELECT retrieves data; WHERE filters rows; ORDER BY sorts the results", "JOIN combines related tables using a shared key, like a lookup across two tables at once", "INSERT, UPDATE, and DELETE change data directly", "Always verify a WHERE clause with SELECT before running UPDATE or DELETE — forgetting it affects the whole table"],
+    simulator: true,
+    recapSimulator: QueryBuilder,
   },
 ];
 /* ══════════════════════ INTERACTIVE: SUBNET CALCULATOR ══════════════════════ */
@@ -3063,6 +3616,7 @@ const TOPICS_NETWORKING = [
     retrieval: { q: "What happens to data at each layer as it travels down the stack before being sent?", a: "Each layer wraps (encapsulates) the data from the layer above it in its own header" },
     recap: ["The OSI model has 7 layers, each hiding its complexity from the layers around it", "Layers 1-3 (Physical, Data Link, Network) get data physically moving and addressed", "Layers 4-7 (Transport, Session, Presentation, Application) manage the actual conversation", "Encapsulation wraps data in a new header at each layer going down; de-encapsulation reverses it going up", "Real protocols map to specific layers: HTTP=7, TCP/UDP=4, IP=3, Ethernet/WiFi=2"],
     simulator: true,
+    recapSimulator: () => <StepThrough name="Encapsulation" steps={STEP_OSI} note="Each layer adds a header on the way down and its peer removes exactly that header on the way up. That symmetry is the whole model." />,
   },
   {
     id: "networking:topologies",
@@ -3104,6 +3658,8 @@ const TOPICS_NETWORKING = [
     ],
     retrieval: { q: "Which topology has no single point of failure, at the cost of far more connections needed?", a: "Mesh" },
     recap: ["Bus, star, and ring are the three classic topologies, each with a different single point of failure", "Mesh connects devices directly to each other, avoiding any single point of failure at the cost of complexity", "Real networks are almost always hybrids, combining topologies at different scales", "Every topology represents a deliberate tradeoff between cost/simplicity and resilience to failure", "The right choice depends on how expensive an outage would actually be"],
+    simulator: true,
+    recapSimulator: TopologyExplorer,
   },
   {
     id: "networking:routing",
@@ -3198,6 +3754,7 @@ const TOPICS_NETWORKING = [
     retrieval: { q: "What do a 4xx and a 5xx status code each indicate?", a: "4xx means the client made an error; 5xx means the server made an error" },
     recap: ["A port routes traffic to the right service on a machine; an IP address alone only routes to the right machine", "Ports 0-1023 are well-known — 80 for HTTP, 443 for HTTPS, 22 for SSH", "HTTP methods (GET, POST, PUT, DELETE) map closely onto SQL's SELECT/INSERT/UPDATE/DELETE", "Status codes group by first digit: 2xx success, 3xx redirect, 4xx client error, 5xx server error", "HTTPS is HTTP wrapped in TLS encryption, running on port 443"],
     simulator: true,
+    recapSimulator: () => <CompareGrid name="Ports Worth Knowing" headers={CG_PORTS.headers} rows={CG_PORTS.rows} note="Click the last column: a port scan is not a list of services, it is a list of assumptions to test." />,
   },
   {
     id: "networking:subnetting",
@@ -3283,6 +3840,8 @@ const TOPICS_NETWORKING = [
     ],
     retrieval: { q: "In one sentence, what's the difference between what a switch does and what a router does?", a: "A switch connects devices within one network; a router connects separate networks to each other" },
     recap: ["Switches operate at Layer 2 (MAC addresses) within a network; routers operate at Layer 3 (IP addresses) between networks", "A VLAN lets one physical switch behave as multiple isolated logical networks", "Trunk ports carry multiple tagged VLANs over a single link; access ports carry just one", "Spanning Tree Protocol disables redundant paths just enough to prevent loops, while keeping them ready as backups", "A WAN connects separate LANs across distance, commonly via a leased ISP connection"],
+    simulator: true,
+    recapSimulator: VlanLab,
   },
 ];
 /* ══════════════════════ INTERACTIVE: ATTACK LIFECYCLE STEPPER ══════════════════════ */
@@ -3379,6 +3938,7 @@ const TOPICS_SECURITY = [
     retrieval: { q: "What's the single most important factor separating ethical hacking from a crime?", a: "Explicit, documented authorization from the system's owner" },
     recap: ["Ethical hacking means finding and reporting weaknesses with explicit permission, to get them fixed", "Testing without authorization is illegal regardless of intent or skill level", "White hat = authorized; black hat = malicious/unauthorized; gray hat = unauthorized but not malicious, still risky", "The CFAA (in the US) and equivalent laws elsewhere make unauthorized access a real crime", "This capstone phase draws directly on nearly everything from every prior phase"],
     simulator: true,
+    recapSimulator: () => <CompareGrid name="Who Is Doing the Hacking" headers={CG_HATS.headers} rows={CG_HATS.rows} note="Click Authorisation. It is the only column that separates a professional from a defendant — technique does not." />,
   },
   {
     id: "security:lifecycle",
@@ -3556,6 +4116,8 @@ query = "SELECT * FROM users WHERE name = '" + userInput + "'"`}</Code>
     ],
     retrieval: { q: "Why doesn't strong technical hardening alone prevent phishing?", a: "Phishing targets human judgment, not a technical vulnerability in the system itself" },
     recap: ["A man-in-the-middle attack intercepts communication between two parties; HTTPS encryption defends against it", "DoS/DDoS attacks overwhelm a service's availability rather than trying to break in", "Phishing manipulates a person into revealing credentials or installing something harmful", "Social engineering (pretexting, tailgating) manipulates people and often requires no technical skill at all", "Real security requires both strong technical controls and well-trained people — neither alone is sufficient"],
+    simulator: true,
+    recapSimulator: PhishingInspector,
   },
   {
     id: "security:reporting-careers",

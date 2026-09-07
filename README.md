@@ -5,7 +5,7 @@
 > Algorithms, Embedded Systems, Industrial Protocols) — and two apps for
 > reading and learning it.
 
-**Version 3.4** · see [CHANGELOG.md](CHANGELOG.md)
+**Version 3.5** · see [CHANGELOG.md](CHANGELOG.md)
 
 ## What's in here
 
@@ -93,10 +93,11 @@ npm install
 npm run dev
 ```
 
-Seven phases, 43 topics, 222 chapters, with interactive simulators (logic
-gates, subnet calculator, CPU cycle stepper, chmod calculator, and more), a
-glossary, a live code playground, and spaced review. Progress persists to
-`localStorage`.
+Seven phases, 43 topics, 222 chapters — and **every topic has something to
+manipulate**: logic gates, a subnet calculator, a CPU cycle stepper, a call
+stack, the JS event loop, a vim mode machine, a query builder and thirty more.
+Plus a glossary, a live code playground and spaced review. Progress persists
+to `localStorage`.
 
 Details: [`Codex_LMS/README.md`](Codex_LMS/README.md).
 
