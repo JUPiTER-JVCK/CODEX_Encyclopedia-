@@ -353,6 +353,10 @@ const GATE_REF = [
 const wCard = (t) => ({ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 18, padding: 26, margin: "24px 0" });
 const wEyebrow = (t) => ({ fontFamily: F_MONO, fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase", color: t.accent, marginBottom: 14 });
 const wNote = (t) => ({ fontSize: 13, color: t.textMuted, fontFamily: F_BODY, lineHeight: 1.7, marginTop: 16 });
+// A control that must not look like a control: keyboard-operable, but visually
+// inheriting whatever it sits inside. Used wherever a row, cell or word is the
+// click target — those must still be real buttons.
+const wReset = { background: "none", border: 0, padding: 0, margin: 0, font: "inherit", color: "inherit", textAlign: "left", cursor: "pointer", width: "100%", display: "block" };
 const wBtn = (t, on) => ({ background: on ? t.accent : t.surfaceAlt, color: on ? "#fff" : t.textSecondary, border: `1px solid ${on ? t.accent : t.border}`, borderRadius: 8, padding: "6px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: F_MONO });
 
 /* ── StepThrough — walk a process one phase at a time ── */
@@ -408,7 +412,14 @@ function CompareGrid({ name, headers, rows, note }) {
           <thead>
             <tr>
               {headers.map((h, k) => (
-                <th key={k} onClick={() => k && setCol(k)} style={{ textAlign: "left", padding: "9px 12px", fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.8, color: k === col ? t.accent : t.textMuted, borderBottom: `2px solid ${k === col ? t.accent : t.border}`, cursor: k ? "pointer" : "default", whiteSpace: "nowrap" }}>{h}</th>
+                <th key={k} scope="col" style={{ textAlign: "left", padding: 0, borderBottom: `2px solid ${k === col ? t.accent : t.border}`, whiteSpace: "nowrap" }}>
+                  {k === 0 ? (
+                    <span style={{ display: "block", padding: "9px 12px", fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.8, color: t.textMuted }}>{h}</span>
+                  ) : (
+                    <button type="button" onClick={() => setCol(k)} aria-pressed={k === col}
+                      style={{ ...wReset, padding: "9px 12px", fontFamily: F_MONO, fontSize: 10.5, textTransform: "uppercase", letterSpacing: 0.8, color: k === col ? t.accent : t.textMuted }}>{h}</button>
+                  )}
+                </th>
               ))}
             </tr>
           </thead>
@@ -450,11 +461,12 @@ function TreeExplorer({ name, root, note, hint }) {
     const isOpen = open.has(id);
     return (
       <div key={id}>
-        <div onClick={() => { setSelId(id); if (kids.length) toggle(id); }}
-          style={{ display: "flex", gap: 8, alignItems: "center", padding: "5px 8px", paddingLeft: 8 + depth * 18, borderRadius: 7, cursor: "pointer", background: id === selId ? t.accentSoft : "transparent", fontFamily: F_MONO, fontSize: 13 }}>
+        <button type="button" onClick={() => { setSelId(id); if (kids.length) toggle(id); }}
+          aria-expanded={kids.length ? isOpen : undefined}
+          style={{ ...wReset, display: "flex", gap: 8, alignItems: "center", padding: "5px 8px", paddingLeft: 8 + depth * 18, borderRadius: 7, background: id === selId ? t.accentSoft : "transparent", fontFamily: F_MONO, fontSize: 13 }}>
           <span style={{ color: t.textMuted, width: 10, flexShrink: 0 }}>{kids.length ? (isOpen ? "▾" : "▸") : "·"}</span>
           <span style={{ color: node.kind === "text" ? t.green : t.blue }}>{node.label}</span>
-        </div>
+        </button>
         {isOpen && kids.map((c, i) => row(c, `${id}.${i}`, depth + 1))}
       </div>
     );
@@ -1100,9 +1112,10 @@ function PhishingInspector() {
       </div>
       <div style={{ background: t.diagramBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: 16 }}>
         {FLAGS.map((f) => (
-          <div key={f.id} onClick={() => click(f)} style={{ fontFamily: F_MONO, fontSize: 12.5, lineHeight: 1.9, cursor: "pointer", padding: "3px 7px", borderRadius: 6, color: found.includes(f.id) ? t.red : t.textSecondary, background: sel && sel.id === f.id ? t.redSoft : "transparent", textDecoration: found.includes(f.id) ? "underline" : "none", wordBreak: "break-word" }}>
+          <button type="button" key={f.id} onClick={() => click(f)} aria-pressed={found.includes(f.id)}
+            style={{ ...wReset, fontFamily: F_MONO, fontSize: 12.5, lineHeight: 1.9, padding: "3px 7px", borderRadius: 6, color: found.includes(f.id) ? t.red : t.textSecondary, background: sel && sel.id === f.id ? t.redSoft : "transparent", textDecoration: found.includes(f.id) ? "underline" : "none", wordBreak: "break-word" }}>
             {f.label}
-          </div>
+          </button>
         ))}
       </div>
       {sel && (
@@ -1776,7 +1789,7 @@ function MemoryHierarchyVisualizer() {
         const pct = Math.max((Math.log10(lvl.time < 1 ? 1 : lvl.time) / maxLog) * 100, 4);
         const isSel = sel === i;
         return (
-          <div key={lvl.name} onClick={() => setSel(isSel ? null : i)} style={{ cursor: "pointer", marginBottom: 14 }}>
+          <button type="button" key={lvl.name} onClick={() => setSel(isSel ? null : i)} aria-pressed={isSel} style={{ ...wReset, marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontFamily: F_UI, marginBottom: 5 }}>
               <span style={{ color: isSel ? t.accent : t.text, fontWeight: 600 }}>{lvl.name}</span>
               <span style={{ fontFamily: F_MONO, color: t.textMuted, fontSize: 12.5 }}>{fmtTime(lvl.time)}</span>
@@ -1785,7 +1798,7 @@ function MemoryHierarchyVisualizer() {
               <div style={{ height: "100%", width: `${pct}%`, background: isSel ? t.accent : t.blue, borderRadius: 6, transition: "width .2s" }} />
             </div>
             {isSel && <div style={{ fontSize: 12.5, color: t.textMuted, fontFamily: F_BODY, marginTop: 7, lineHeight: 1.5 }}>{lvl.desc}</div>}
-          </div>
+          </button>
         );
       })}
       <Callout title="The whole point of this ladder" tone="green">Every step down is roughly 10-1000× slower than the one above it, and roughly 10-1000× bigger in capacity. A CPU spends enormous engineering effort trying to keep the data it needs up in the fast, tiny levels — that entire discipline is called cache management, and it's a huge part of why some code runs dramatically faster than other code that does "the same" work.</Callout>
@@ -4259,7 +4272,8 @@ function InlineTerm({ term, def }) {
   const [open, setOpen] = useState(false);
   return (
     <span style={{ position: "relative" }}>
-      <span onClick={() => setOpen((o) => !o)} style={{ borderBottom: `2px dotted ${t.accent}`, color: t.accent, cursor: "pointer", fontWeight: 600 }}>{term}</span>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
+        style={{ ...wReset, display: "inline", width: "auto", borderBottom: `2px dotted ${t.accent}`, color: t.accent, fontWeight: 600 }}>{term}</button>
       {open && (
         <span style={{ position: "absolute", bottom: "125%", left: 0, background: t.surface, border: `1px solid ${t.borderStrong}`, borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: t.textSecondary, fontFamily: F_BODY, width: 220, boxShadow: "0 6px 20px rgba(0,0,0,0.25)", zIndex: 20, lineHeight: 1.5 }}>{def}</span>
       )}
@@ -4500,7 +4514,10 @@ function TopicMap({ topics, completed, onOpen }) {
           const col = done ? t.green : t.accent;
           const short = node.title.split(" ").slice(0, 2).join(" ");
           return (
-            <g key={node.id} onClick={() => onOpen(i)} style={{ cursor: "pointer" }}>
+            <g key={node.id} onClick={() => onOpen(i)} role="button" tabIndex={0}
+              aria-label={node.title}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(i); } }}
+              style={{ cursor: "pointer" }}>
               <circle cx={node.x} cy={node.y} r={16} fill={done || isCurrent ? col : t.surface} stroke={col} strokeWidth="2" opacity={done || isCurrent ? 1 : 0.5} />
               <text x={node.x} y={node.y + 5} textAnchor="middle" fontFamily={F_MONO} fontSize="12" fontWeight="700" fill={done || isCurrent ? "#fff" : col}>{i + 1}</text>
               <text x={node.x} y={node.y + (i % 2 === 0 ? -28 : 40)} textAnchor="middle" fontFamily={F_UI} fontSize="10.5" fontWeight="600" fill={t.textMuted}>{short}</text>

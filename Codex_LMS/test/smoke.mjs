@@ -89,6 +89,35 @@ function checkSimulatorFlags() {
   return { total, flagged, byPhase };
 }
 
+// ── A click target must be operable by keyboard ────────────────────────────
+// onClick on a <div>, <span> or <th> is invisible to Tab, ignores Enter and
+// Space, and is not announced as a control. Three widgets shipped that way
+// before review caught it. Allowed: a real <button>, a component (capitalised
+// tag, which renders its own button), or an element carrying role="button"
+// with tabIndex and a key handler — the escape hatch SVG needs, since <svg>
+// cannot contain a <button>.
+function checkClickTargets() {
+  const src = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "src", "CoreApp.jsx"), "utf8");
+  const lines = src.split("\n");
+  const bad = [];
+  lines.forEach((line, i) => {
+    if (!line.includes("onClick")) return;
+    const tag = (line.match(/<([A-Za-z][A-Za-z0-9]*)/) || [])[1];
+    if (!tag) return;                                   // continuation line
+    if (tag === "button") return;                       // the good case
+    if (tag[0] === tag[0].toUpperCase()) return;        // a component
+    // role="button" + tabIndex + a key handler may span the following lines
+    const block = lines.slice(i, i + 6).join(" ");
+    if (/role="button"/.test(block) && /tabIndex/.test(block) && /onKeyDown/.test(block)) return;
+    bad.push(`${i + 1}: <${tag}> has onClick but is not keyboard-operable`);
+  });
+  if (bad.length) {
+    throw new Error("click targets that a keyboard cannot reach:\n   " + bad.join("\n   "));
+  }
+}
+checkClickTargets();
+console.log("  every click target is keyboard-operable");
+
 const flags = checkSimulatorFlags();
 console.log(`  simulator flag matches reality: ${flags.flagged}/${flags.total} topics interactive`);
 
@@ -239,6 +268,27 @@ if (missing.length) {
   throw new Error("flagged interactive but rendered no widget:\n   " + missing.join("\n   "));
 }
 step(`every flagged topic renders a widget: ${checked} opened`);
+
+// ── The fixed controls must actually work from the keyboard ────────────────
+// The source check above proves the markup is right; this proves the result
+// is operable. Tab reaches the control, Enter activates it, state changes.
+await sweep.getByText("Hardware", { exact: true }).first().click(T);
+await sweep.locator("button").filter({ hasText: "Storage Evolution" }).first().click(T);
+const headers = sweep.locator('th button[aria-pressed]');
+const headerCount = await headers.count();
+if (headerCount < 2) throw new Error(`CompareGrid headers not keyboard controls (found ${headerCount})`);
+const before = await headers.nth(1).getAttribute("aria-pressed");
+const target = before === "true" ? headers.nth(2) : headers.nth(1);
+await target.focus();
+const focused = await sweep.evaluate(() => document.activeElement.tagName);
+if (focused !== "BUTTON") throw new Error(`focus landed on <${focused}>, not a button`);
+await sweep.keyboard.press("Enter");
+if ((await target.getAttribute("aria-pressed")) !== "true") {
+  throw new Error("Enter on a focused column header did not select it");
+}
+step("keyboard: Tab reaches a CompareGrid header, Enter selects it");
+await sweep.getByText("All topics").first().click(T);
+
 await sweep.close();
 
 await browser.close();

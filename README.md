@@ -5,7 +5,7 @@
 > Algorithms, Embedded Systems, Industrial Protocols) — and two apps for
 > reading and learning it.
 
-**Version 3.5** · see [CHANGELOG.md](CHANGELOG.md)
+**Version 3.6** · see [CHANGELOG.md](CHANGELOG.md)
 
 ## What's in here
 

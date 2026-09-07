@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## v3.6 — 2026-09-07
+
+### Fixed — three widgets were unusable without a mouse
+
+Review caught `onClick` attached to a `<th>` in `CompareGrid`, and to a
+`<div>` in `TreeExplorer` and `PhishingInspector`. None of those is
+focusable, none responds to Enter or Space, and none is announced as a
+control. The point of the previous release was that every topic has something
+to *manipulate* — for a keyboard or screen-reader user, in those three the
+interactive part was the only part that did not work.
+
+Sweeping the file found three more of the same shape that predate this work:
+`MemoryHierarchyVisualizer`, `InlineTerm`, and `TopicMap`. All six are fixed
+rather than the three that were reported, since leaving identical defects in
+the same file would have been worse than either extreme.
+
+Each is a real `<button type="button">` now, with `aria-pressed` or
+`aria-expanded` where it applies, and a shared `wReset` style so a control
+can still look like a table header, a tree row or a word in a sentence.
+`TopicMap` is the exception: `<svg>` cannot contain a `<button>`, so its
+nodes take `role="button"`, `tabIndex` and a key handler instead.
+
+### Added — a keyboard check in `test/smoke.mjs`
+
+`onClick` may only appear on a `<button>`, a component, or an element with
+`role="button"` plus `tabIndex` and a key handler. Verified by reintroducing
+the original `<div onClick>`, which fails the run naming the line.
+
+The sweep now also Tabs to a `CompareGrid` header and presses Enter, so the
+guard proves the control is *operable* and not merely spelled correctly.
+
+**Not verified:** how it sounds. Focusable and operable are checked; whether
+a screen reader announces any of it sensibly is not, and is recorded as a
+known limit rather than claimed.
+
 ## v3.5 — 2026-09-07
 
 ### Added — something to manipulate in every topic

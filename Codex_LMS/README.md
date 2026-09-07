@@ -128,6 +128,12 @@ Two further guards run alongside it:
 - **Flag consistency.** A topic's `simulator: true` must agree with whether
   it renders a component that holds state. Read from source, because the
   failure is a stale literal rather than a rendering fault.
+- **Keyboard operability.** `onClick` may only sit on a `<button>`, a
+  component, or an element carrying `role="button"` with `tabIndex` and a key
+  handler. Three widgets shipped as clickable `<div>`s before review caught
+  it — invisible to Tab, deaf to Enter, and not announced as controls. The
+  sweep also Tabs to a real control and presses Enter, so the check proves
+  operability rather than just markup.
 - **Render sweep.** All 43 topics are opened in reference mode and each must
   mount a widget with no page error. This is the only check that proves the
   components render rather than merely compile — and it earned its keep
@@ -180,6 +186,10 @@ red on a network hiccup is a gate people learn to ignore.
 
 - Fonts (Poppins, Lora, JetBrains Mono) load from Google Fonts. Offline, the
   app falls back to system serif/sans/mono and still lays out correctly.
+- **Not verified: how any of this sounds.** The checks prove every control is
+  focusable and operable; they cannot prove a screen reader announces it
+  sensibly. `aria-pressed` / `aria-expanded` are set where they apply, but
+  nobody has listened to the result.
 - The bundle is ~530 KB (166 KB gzipped) in one chunk. All content is inlined
   as JSX, so there is nothing to code-split without restructuring the phases
   into lazy routes. The 33 widgets added for full topic coverage cost about
