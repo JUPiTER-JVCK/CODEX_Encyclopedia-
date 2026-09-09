@@ -67,7 +67,7 @@ def classify(lines: list[str]) -> tuple[list[int], list[int]]:
             if not fence_len:
                 fence_len = run
                 continue
-            if run >= fence_len:
+            if run >= fence_len and raw[m.end():].strip() == "":
                 fence_len = 0
                 continue
         if fence_len:

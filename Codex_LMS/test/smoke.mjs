@@ -41,11 +41,11 @@ function checkSimulatorFlags() {
   // illustration, not a simulator, and must not claim the badge — an earlier
   // pass counted any component reference and mislabelled seven topics.
   const widgets = new Set();
-  for (const m of src.matchAll(/^function ([A-Z][A-Za-z]*)\(/gm)) {
+  for (const m of src.matchAll(/^function ([A-Z][A-Za-z0-9_]*)\(/gm)) {
     const from = m.index;
     const next = src.indexOf("\nfunction ", from + 1);
     const body = src.slice(from, next < 0 ? src.length : next);
-    if (body.includes("useState")) widgets.add(m[1]);
+    if (/\buseState\s*\(/.test(body)) widgets.add(m[1]);
   }
   const arrays = ["LOGIC", "HARDWARE", "CLI", "PROGRAMMING", "WEB", "NETWORKING", "SECURITY"];
   const bad = [];
@@ -54,8 +54,9 @@ function checkSimulatorFlags() {
   let flagged = 0;
 
   for (const name of arrays) {
-    const at = src.indexOf(`const TOPICS_${name} = [`);
-    if (at < 0) throw new Error(`TOPICS_${name} not found — smoke test is out of date with the source`);
+    const m = new RegExp(`const\\s+TOPICS_${name}\\s*=\\s*\\[`).exec(src);
+    if (!m) throw new Error(`TOPICS_${name} not found — smoke test is out of date with the source`);
+    const at = m.index;
     let depth = 0;
     let i = src.indexOf("[", at);
     const start = i;
