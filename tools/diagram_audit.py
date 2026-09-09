@@ -102,11 +102,69 @@ def layer_readmes(root: str) -> list[str]:
     return sorted(found)
 
 
+# Fence handling has been wrong twice: first by toggling on any run of three
+# backticks (which broke on a ````-fenced example containing ```text), then by
+# treating a run with an info string as a close. Both were found by review
+# rather than by running anything, so the cases live here now.
+FENCE_CASES = [
+    (
+        "info string cannot close a fence",
+        ["```", "┌───┐", "```text", "│ x │", "└───┘", "```"],
+        [2, 4, 5], [],
+    ),
+    (
+        "a longer fence nests a shorter one",
+        ["````", "```text", "│ x │", "```", "````"],
+        [3], [],
+    ),
+    (
+        "a shorter run cannot close a longer fence",
+        ["````", "```", "│ x │", "````"],
+        [3], [],
+    ),
+    (
+        "box characters in prose are unfenced",
+        ["not fenced ─── at all"],
+        [], [1],
+    ),
+    (
+        "an inline code span is a mention, not a drawing",
+        ["prose with `─3*[worker]` inside it"],
+        [], [],
+    ),
+    (
+        "trailing whitespace still closes",
+        ["```", "│ x │", "```   "],
+        [2], [],
+    ),
+]
+
+
+def self_test() -> int:
+    """Assert the fence rules directly. `python3 tools/diagram_audit.py --self-test`."""
+    failed = 0
+    for name, doc, want_fenced, want_loose in FENCE_CASES:
+        fenced, loose = classify(doc)
+        ok = fenced == want_fenced and loose == want_loose
+        print(f"  {'ok  ' if ok else 'FAIL'} {name}")
+        if not ok:
+            print(f"       fenced {fenced} want {want_fenced}")
+            print(f"       loose  {loose} want {want_loose}")
+            failed += 1
+    print(f"\n{len(FENCE_CASES) - failed}/{len(FENCE_CASES)} fence cases pass")
+    return 1 if failed else 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
+    parser.add_argument("--self-test", action="store_true",
+                        help="check the fence rules against known cases and exit")
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     faults: list[tuple[str, int, str, str]] = []
     files = diagrams = 0

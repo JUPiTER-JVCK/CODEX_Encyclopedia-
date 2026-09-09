@@ -135,6 +135,13 @@ Two rules, both enforced by `tools/diagram_audit.py`:
 - **At most 90 columns.** The widest existing diagram is 86; past that a
   drawing wraps or scrolls in a narrow pane.
 
+`diagram_audit.py` implements a **subset** of CommonMark's fence rules — the
+part these diagrams depend on: a fence opens on three or more backticks and
+closes only on a run at least as long *followed by whitespace only*, so a
+labelled fence like ` ```text ` inside a longer one is content. Both halves of
+that have been wrong at some point, so the cases are asserted directly:
+`python3 tools/diagram_audit.py --self-test`, which also runs in CI.
+
 Every layer `README.md` carries one, between the opening blockquote and
 *At a glance*, showing where the layer sits and what crosses its boundaries —
 `## In the stack` for a layer with neighbours above and below, `## Across the

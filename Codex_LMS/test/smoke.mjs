@@ -75,9 +75,12 @@ function checkSimulatorFlags() {
         if (!id) continue;
         total++;
         const flag = /simulator: true/.test(topic);
-        const rc = (topic.match(/recapSimulator: (?:\(\) => <)?([A-Z][A-Za-z]*)/) || [])[1];
+        // Same name class as the widget set above. If these two disagree the
+        // check silently stops working: the set holds the full name while the
+        // lookup truncates at the first digit, so they can never match.
+        const rc = (topic.match(/recapSimulator: (?:\(\) => <)?([A-Z][A-Za-z0-9_]*)/) || [])[1];
         const renders = (rc && widgets.has(rc)) ||
-          [...topic.matchAll(/<([A-Z][A-Za-z]*)\s*\/>/g)].some((m) => widgets.has(m[1]));
+          [...topic.matchAll(/<([A-Z][A-Za-z0-9_]*)\s*\/>/g)].some((m) => widgets.has(m[1]));
         const title = (topic.match(/title: "([^"]+)"/) || [])[1];
         if (flag) { flagged++; if (title) (byPhase[name] ||= []).push(title); }
         if (flag !== renders) bad.push(`${id}: flag=${flag} but renders=${renders}`);
