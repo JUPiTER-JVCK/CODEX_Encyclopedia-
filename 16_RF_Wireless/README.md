@@ -4,6 +4,19 @@
 > Wi-Fi, Bluetooth, cellular, satellite, RFID, NFC, AM/FM, HF/VHF/UHF radio.
 > Hardware lives at L1; the protocols intersect L1–L3 of the network stack.
 
+## Across the stack
+
+```text
+this layer cuts across the stack rather than sitting in one place
+
+  10  Network Data Link (Wi-Fi MAC)  ─┐      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  09  Network Physical (the PHY)     ─┼──────┃  16  RF / Wireless             ◀── here   ┃
+  01  Circuit Board (RF front end)   ─┘      ┃      electromagnetic signalling           ┃
+                                             ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+the same signal is hardware, then a PHY, then a MAC
+```
+
 ## At a glance
 
 | Field | Value |

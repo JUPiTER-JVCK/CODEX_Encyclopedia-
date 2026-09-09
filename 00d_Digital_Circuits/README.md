@@ -4,6 +4,23 @@
 > stores it. Logic gates, flip-flops, registers, ALUs, FSMs, and the RTL that
 > describes them — the building blocks of every CPU above.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  02  CPU                                     │
+└───────────────────────┬──────────────────────┘
+                        │  Boolean signals on wires
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  00d  Digital Circuits            ◀── here   ┃
+┃      gates · flip-flops · clocked logic      ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  voltage / current waveforms
+┌───────────────────────┴──────────────────────┐
+│  00c  Analog Circuits                        │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

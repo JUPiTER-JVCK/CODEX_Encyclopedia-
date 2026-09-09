@@ -3,6 +3,21 @@
 > The physical substrate. Copper, silicon, solder, and signals — everything
 > above this layer ultimately rides on electrons moving across these traces.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  02  CPU                                     │
+└───────────────────────┬──────────────────────┘
+                        │  electrical signals, serial & parallel buses
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  01  Circuit Board                ◀── here   ┃
+┃      PCB · buses · connectors · power rails  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+also carries 09 Network Physical — the NIC's PHY sits on this board
+```
+
 ## At a glance
 
 | Field | Value |

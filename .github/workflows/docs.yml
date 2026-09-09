@@ -1,6 +1,6 @@
 name: Docs
 
-# Wires up the audit scripts. All three exit non-zero on a failure, so they
+# Wires up the audit scripts. All four exit non-zero on a failure, so they
 # were always meant to gate — they just had nothing calling them except a
 # human remembering to.
 
@@ -45,3 +45,14 @@ jobs:
       # bulk edits, which is why this is a script and not a convention.
       - name: Title audit
         run: python3 tools/title_audit.py
+
+      # Diagrams are the codex's only illustration, and the failure mode is
+      # silent: box characters outside a fence render proportional and the
+      # drawing collapses. Also holds every layer README to having one.
+      # The fence rules have been wrong twice, both times found by review
+      # rather than by running anything. These cases assert them directly.
+      - name: Diagram audit self-test
+        run: python3 tools/diagram_audit.py --self-test
+
+      - name: Diagram audit
+        run: python3 tools/diagram_audit.py

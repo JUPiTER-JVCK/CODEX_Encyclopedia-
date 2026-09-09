@@ -3,6 +3,23 @@
 > Continuous-valued signals shaped, amplified, filtered, converted. The world
 > is analog; digital is a convention enforced by clean voltage thresholds.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  00d  Digital Circuits                       │
+└───────────────────────┬──────────────────────┘
+                        │  voltage / current waveforms
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  00c  Analog Circuits             ◀── here   ┃
+┃      amplifiers · filters · power · signals  ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  I-V curves, datasheet parameters
+┌───────────────────────┴──────────────────────┐
+│  00b  Devices                                │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

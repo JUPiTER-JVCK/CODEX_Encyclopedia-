@@ -4,6 +4,20 @@
 > hard on CPU/GPU/accelerator hardware below and the network above. This
 > layer collects models, training, inference, agents, and tooling.
 
+## Across the stack
+
+```text
+this layer cuts across the stack rather than sitting in one place
+
+  13  Network Application  ─┐
+  08  User Applications    ─┤      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  07  Runtime Environment  ─┼──────┃  15  AI / ML                          ◀── here   ┃
+  06  System Libraries     ─┤      ┃      models · training · inference · agents      ┃
+  02  CPU / accelerators   ─┘      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+a model is maths on an accelerator, shipped as an API
+```
+
 ## At a glance
 
 | Field | Value |

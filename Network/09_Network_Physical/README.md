@@ -3,6 +3,23 @@
 > Bits on the medium. Copper twisted pair, fiber strands, coax, RF in the air.
 > Modulation, line coding, signal levels, connectors, distance limits.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  10  Network Data Link (L2)                  │
+└───────────────────────┬──────────────────────┘
+                        │  encoded bits on copper, fiber, RF
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  09  Network Physical (L1)        ◀── here   ┃
+┃      bits on the medium · modulation         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  electrical signals, serial & parallel buses
+┌───────────────────────┴──────────────────────┐
+│  01  Circuit Board                           │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

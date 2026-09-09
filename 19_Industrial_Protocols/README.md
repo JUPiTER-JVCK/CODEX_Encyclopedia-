@@ -4,6 +4,21 @@
 > Many ride below standard IP networks (or in parallel to them) and don't fit
 > cleanly into the OSI-aligned layers 09–13.
 
+## Across the stack
+
+```text
+this layer cuts across the stack rather than sitting in one place
+
+  18  Embedded Systems     ─┐
+  13  Network Application  ─┤
+  12  Network Transport    ─┤      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  11  Network Internet     ─┼──────┃  19  Industrial & Automotive Protocols  ◀── here ┃
+  10  Network Data Link    ─┤      ┃      deterministic, domain-specific networks     ┃
+  09  Network Physical     ─┘      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+
+OT networks trade throughput for bounded, predictable latency
+```
+
 ## At a glance
 
 | Field | Value |

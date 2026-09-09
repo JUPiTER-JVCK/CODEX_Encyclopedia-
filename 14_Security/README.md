@@ -4,6 +4,22 @@
 > folder organizes offensive, defensive, and assurance material with explicit
 > pointers back to the layer where the issue originates.
 
+## Across the stack
+
+```text
+this layer cuts across the stack rather than sitting in one place
+
+  13  Network Application  ─┐
+  11  Network Internet     ─┤
+  08  User Applications    ─┤      ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+  07  Runtime Environment  ─┼──────┃  14  Security                         ◀── here   ┃
+  05  OS Kernel            ─┤      ┃      breaking and defending every other layer    ┃
+  04  Device Drivers       ─┤      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+  01  Circuit Board        ─┘
+
+one adversary chains a kernel bug (05) to a phishing mail (13)
+```
+
 ## At a glance
 
 | Field | Value |

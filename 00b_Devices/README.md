@@ -3,6 +3,23 @@
 > Where physics becomes a part you can solder. Diodes, BJTs, MOSFETs,
 > passives. The atomic units of every analog and digital circuit above.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  00c  Analog Circuits                        │
+└───────────────────────┬──────────────────────┘
+                        │  I-V curves, datasheet parameters
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  00b  Devices                     ◀── here   ┃
+┃      diodes · transistors · passives         ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  carrier behaviour in silicon
+┌───────────────────────┴──────────────────────┐
+│  00  Physics                                 │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

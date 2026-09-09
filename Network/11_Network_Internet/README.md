@@ -3,6 +3,23 @@
 > Packets routed between networks. IP addressing, routing protocols, ICMP,
 > tunnels — the layer that makes the internet *internetworked*.
 
+## In the stack
+
+```text
+┌──────────────────────────────────────────────┐
+│  12  Network Transport (L4)                  │
+└───────────────────────┬──────────────────────┘
+                        │  IP packets, host to host
+┏━━━━━━━━━━━━━━━━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━┓
+┃  11  Network Internet (L3)        ◀── here   ┃
+┃      packets · IP addressing · routing · TTL ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━┛
+                        │  frames carrying packets
+┌───────────────────────┴──────────────────────┐
+│  10  Network Data Link (L2)                  │
+└──────────────────────────────────────────────┘
+```
+
 ## At a glance
 
 | Field | Value |

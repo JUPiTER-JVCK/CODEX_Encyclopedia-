@@ -5,7 +5,7 @@
 > Algorithms, Embedded Systems, Industrial Protocols) — and two apps for
 > reading and learning it.
 
-**Version 3.3** · see [CHANGELOG.md](CHANGELOG.md)
+**Version 3.6** · see [CHANGELOG.md](CHANGELOG.md)
 
 ## What's in here
 
@@ -93,10 +93,11 @@ npm install
 npm run dev
 ```
 
-Seven phases, 43 topics, 222 chapters, with interactive simulators (logic
-gates, subnet calculator, CPU cycle stepper, chmod calculator, and more), a
-glossary, a live code playground, and spaced review. Progress persists to
-`localStorage`.
+Seven phases, 43 topics, 222 chapters — and **every topic has something to
+manipulate**: logic gates, a subnet calculator, a CPU cycle stepper, a call
+stack, the JS event loop, a vim mode machine, a query builder and thirty more.
+Plus a glossary, a live code playground and spaced review. Progress persists
+to `localStorage`.
 
 Details: [`Codex_LMS/README.md`](Codex_LMS/README.md).
 
@@ -140,7 +141,7 @@ CODEX_Encyclopedia-/
 │                          ─┘
 ├── Codex_macOS/            ← SwiftUI reader source
 ├── Codex_LMS/              ← React curriculum source
-└── tools/                  ← maintenance scripts (link, table, title audits)
+└── tools/                  ← maintenance scripts (link, table, title, diagram audits)
 ```
 
 Anything added at the root that isn't a layer must also be registered in
@@ -202,7 +203,7 @@ the LMS:
 | Workflow | Runs | Catches |
 |----------|------|---------|
 | `swift.yml` | `swift build` debug + release, on `macos-14` | The macOS app not compiling |
-| `docs.yml` | `link_audit.py`, `table_audit.py`, `title_audit.py` | Broken links, missing H1s, malformed tables, uncanonical section titles |
+| `docs.yml` | `link_audit.py`, `table_audit.py`, `title_audit.py`, `diagram_audit.py` | Broken links, missing H1s, malformed tables, uncanonical section titles, unfenced or missing diagrams |
 | `lms.yml` | `npm ci`, build, `npm audit`, Playwright smoke test | CORE not building, or losing progress on reload |
 
 Running every workflow on every PR is deliberate. A *required* status check
@@ -216,6 +217,7 @@ The same checks run locally:
 python3 tools/link_audit.py
 python3 tools/table_audit.py
 python3 tools/title_audit.py
+python3 tools/diagram_audit.py
 
 # LMS — build, then smoke-test. `smoke:local` starts the preview server,
 # waits (bounded) for it to actually listen, runs the test, and cleans up.
@@ -239,3 +241,5 @@ breakage. Currently:
 - 1009 internal links, 0 broken
 - Every file carries an H1, every pipe table well-formed
 - All 138 section indexes titled `<Layer> — <Section>`
+- 101 files carry a diagram, all fenced and within 90 columns; every layer
+  README shows where its layer sits

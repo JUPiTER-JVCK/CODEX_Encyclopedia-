@@ -1,5 +1,148 @@
 # CHANGELOG
 
+## v3.6 — 2026-09-07
+
+### Fixed — three widgets were unusable without a mouse
+
+Review caught `onClick` attached to a `<th>` in `CompareGrid`, and to a
+`<div>` in `TreeExplorer` and `PhishingInspector`. None of those is
+focusable, none responds to Enter or Space, and none is announced as a
+control. The point of the previous release was that every topic has something
+to *manipulate* — for a keyboard or screen-reader user, in those three the
+interactive part was the only part that did not work.
+
+Sweeping the file found three more of the same shape that predate this work:
+`MemoryHierarchyVisualizer`, `InlineTerm`, and `TopicMap`. All six are fixed
+rather than the three that were reported, since leaving identical defects in
+the same file would have been worse than either extreme.
+
+Each is a real `<button type="button">` now, with `aria-pressed` or
+`aria-expanded` where it applies, and a shared `wReset` style so a control
+can still look like a table header, a tree row or a word in a sentence.
+`TopicMap` is the exception: `<svg>` cannot contain a `<button>`, so its
+nodes take `role="button"`, `tabIndex` and a key handler instead.
+
+### Added — a keyboard check in `test/smoke.mjs`
+
+`onClick` may only appear on a `<button>`, a component, or an element with
+`role="button"` plus `tabIndex` and a key handler. Verified by reintroducing
+the original `<div onClick>`, which fails the run naming the line.
+
+The sweep now also Tabs to a `CompareGrid` header and presses Enter, so the
+guard proves the control is *operable* and not merely spelled correctly.
+
+**Not verified:** how it sounds. Focusable and operable are checked; whether
+a screen reader announces any of it sensibly is not, and is recorded as a
+known limit rather than claimed.
+
+## v3.5 — 2026-09-07
+
+### Added — something to manipulate in every topic
+
+CORE was built around learning by manipulation, but only **17 of 43 topics**
+had anything to interact with. CLI and Web sat at 1 of 6. Now every topic
+does.
+
+Four reusable primitives carry most of it, driven by data declared beside the
+topic that uses them, so giving a topic something to manipulate is a data
+change rather than another component:
+
+| Primitive | Shape |
+|---|---|
+| `StepThrough` | a process one phase at a time, with state per step |
+| `CompareGrid` | hold one dimension still and read it down every row |
+| `TreeExplorer` | expand a nested structure, inspect one node |
+| `TruthTableBuilder` | pick an expression, read every case |
+
+Eleven topics whose subject has a shape of its own got a bespoke widget
+instead: a signed 32-bit clock walking into its sign bit, a vim mode machine,
+the shell's expansion order, a call stack pushing and popping frames, the
+event loop showing why `A D C B` is not the order it was written, a pipeline
+composer, a value inspector, a query builder, a topology explorer, a VLAN
+lab, and a phishing inspector.
+
+Wired through the existing `recapSimulator` hook, which already rendered in
+both read modes and had been used exactly once since v3.2.
+
+### Fixed — the "interactive" badge was wrong twice
+
+`simulator: true` drives the badge on topic cards. It was set on 7 topics
+while 17 had a widget, so ten topics hid what they had.
+
+Correcting that revealed a second, subtler error: the first fix counted *any*
+component reference as interactive, which quietly promoted seven **static
+diagrams** — `FullStackDiagram`, `OSIStackDiagram`, `HatCards` and four more,
+none of which hold any state — into things the badge called interactive. The
+sweep added below caught it by opening each topic and finding no widget.
+
+Interactive now means a component that holds state. Those seven topics kept
+their diagram and gained a real widget beside it, so the badge is true on all
+43 rather than true by redefinition.
+
+### Added — two guards in `test/smoke.mjs`
+
+- A source check that a topic's `simulator` flag agrees with whether it
+  renders a stateful widget. Verified by removing the flag from `web:css`
+  and from `web:sql`; both failed the run naming the topic.
+- A render sweep that opens **all 43 topics** in reference mode and asserts
+  each mounts a widget with no page error. This is what caught the static
+  diagrams, and it is the only check that proves 33 new components actually
+  render rather than merely compiling.
+
+Bundle: 472.96 → 530.51 kB raw, 148.34 → 166.32 kB gzipped — about 18 kB
+gzipped for 33 widgets, because most share four implementations.
+
+## v3.4 — 2026-09-07
+
+### Added — a diagram on every layer README
+
+The codex draws well: 2,235 box-character lines across 78 files, essentially
+all of them correctly fenced. None of that reached the 23 layer `README.md`
+files, which are the first thing anyone opens for a layer — **0 of 23 carried
+a diagram.**
+
+Each now has one between the opening blockquote and *At a glance*:
+
+- `## In the stack` for the 17 layers with neighbours, showing the layer
+  above and below and naming the interface that crosses each boundary —
+  system calls between 05 and 06, the ISA between 01 and 02, and so on. The
+  neighbours and interfaces come from each README's own *Adjacent* and
+  *Medium / Interface* rows rather than being invented.
+- `## Across the stack` for the six cross-cutting layers (14–19), fanning out
+  to the layers each one intersects, since "above" and "below" do not apply
+  to them.
+
+Two layers whose *Adjacent* row lists a second neighbour the box cannot show
+— 01 to 09, and 08 to 13 — say so in a line under the diagram, so the drawing
+is never quietly less true than the table beneath it.
+
+Drawn as fenced text, not images: `_assets/` is empty, and a fenced diagram
+stays reviewable in a diff and renders identically on GitHub and in the macOS
+app's code-block path.
+
+### Added — `tools/diagram_audit.py`
+
+Diagrams have one failure mode and it is silent: box characters outside a
+fence render proportional, the columns stop lining up, and nothing in the
+source looks wrong. Three checks, gating in CI beside the other audits:
+
+- `UNFENCED` — box characters in prose. Inline code spans are stripped first,
+  so `` `─3*[worker]` `` in `05_OS_Kernel/man_pages/process_commands.md` is
+  correctly read as a mention rather than a broken drawing.
+- `TOO WIDE` — past 90 columns. The widest existing diagram is 86 and p99 is
+  77, so the limit was measured rather than guessed.
+- `NO DIAGRAM` — a layer README without one.
+
+It found a bug in itself on first use. Writing the convention into
+`STRUCTURE.md` needed a ```` ````-fenced example containing a ```` ```text ````
+block, and the naive "toggle on any three backticks" fence tracker read that
+as a fence closing. It now follows CommonMark: a fence closes only on a run
+at least as long as the one that opened it.
+
+`docs.yml` keeps the job name `docs audit` — it was renamed once already, and
+renaming a required check after branch protection exists is what leaves pull
+requests permanently unmergeable.
+
 ## v3.3 — 2026-09-06
 
 ### Fixed — the 138 section indexes were effectively unnamed
