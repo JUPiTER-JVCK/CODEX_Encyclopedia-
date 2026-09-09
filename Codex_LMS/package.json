@@ -1,7 +1,7 @@
 {
   "name": "core-lms",
   "private": true,
-  "version": "1.0.0",
+  "version": "3.6.0",
   "type": "module",
   "description": "CORE — a seven-phase computing curriculum: Logic, Hardware, CLI/OS, Programming, Web, Networking, Security",
   "engines": {

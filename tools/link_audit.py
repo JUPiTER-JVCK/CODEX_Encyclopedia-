@@ -20,15 +20,12 @@ import re
 import sys
 import urllib.parse
 
-# Directories holding application code or build output rather than codex
-# content. Mirrors CodexTree.nonContentDirs in the macOS app — keep in sync.
-SKIP_DIRS = {
-    ".git",
-    "node_modules",
-    "dist",
-    ".build",
-    "Codex.app",
-}
+# Run as a script, sys.path[0] is tools/; imported by stats_audit,
+# tools/ is already on the path. Either way this resolves.
+import _common
+
+# Shared with every other audit so they all count the same set of files.
+SKIP_DIRS = _common.SKIP_DIRS
 
 # Images the codex references but does not ship. Documented in
 # _assets/README.md; listed here so the audit reports them separately
@@ -39,6 +36,20 @@ KNOWN_MISSING_IMAGES = {
     "logic_gates_explained.png",
     "embedded_systems_roadmap.png",
 }
+
+# GitHub templates are fragments pasted into a pull request or issue body,
+# not documents. An H1 in one renders as a full-width heading on every PR
+# that uses it, so they conventionally start at "##". They are still checked
+# for links and tables; only the H1 requirement is lifted.
+H1_EXEMPT_PREFIXES = (
+    os.path.join(".github", "pull_request_template.md"),
+    os.path.join(".github", "ISSUE_TEMPLATE"),
+)
+
+
+def needs_h1(rel: str) -> bool:
+    return not rel.startswith(H1_EXEMPT_PREFIXES)
+
 
 LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)]+)\)")
 IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
@@ -59,13 +70,7 @@ def strip_code(text: str) -> str:
 
 
 def markdown_files(root: str) -> list[str]:
-    found = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        found.extend(
-            os.path.join(dirpath, f) for f in filenames if f.endswith(".md")
-        )
-    return sorted(found)
+    return sorted(path for path, _ in _common.walk_markdown(root))
 
 
 def audit(root: str) -> tuple[dict, list, list, list]:
@@ -75,8 +80,9 @@ def audit(root: str) -> tuple[dict, list, list, list]:
     for path in markdown_files(root):
         stats["files"] += 1
         raw = open(path, encoding="utf-8").read()
-        if not re.search(r"^# ", raw, re.M):
-            no_h1.append(os.path.relpath(path, root))
+        rel = os.path.relpath(path, root)
+        if needs_h1(rel) and not re.search(r"^# ", raw, re.M):
+            no_h1.append(rel)
 
         body = strip_code(raw)
         for regex, is_image in ((LINK_RE, False), (IMAGE_RE, True)):

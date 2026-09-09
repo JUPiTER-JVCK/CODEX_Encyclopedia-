@@ -1,6 +1,6 @@
 name: Docs
 
-# Wires up the audit scripts. All four exit non-zero on a failure, so they
+# Wires up the audit scripts. All five exit non-zero on a failure, so they
 # were always meant to gate — they just had nothing calling them except a
 # human remembering to.
 
@@ -56,3 +56,11 @@ jobs:
 
       - name: Diagram audit
         run: python3 tools/diagram_audit.py
+
+      # The numbers README quotes about itself — file, link, index and
+      # diagram counts. They drifted because nothing checked them: the
+      # diagram count sat at 101 against a real 102. A claim this cannot
+      # find fails the same as a claim that is wrong, so rewording the
+      # README turns the build red instead of quietly retiring the check.
+      - name: Stats audit
+        run: python3 tools/stats_audit.py

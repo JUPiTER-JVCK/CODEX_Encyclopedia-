@@ -31,7 +31,12 @@ import os
 import re
 import sys
 
-SKIP_DIRS = {".git", "node_modules", "dist", ".build", "Codex.app"}
+# Run as a script, sys.path[0] is tools/; imported by stats_audit,
+# tools/ is already on the path. Either way this resolves.
+import _common
+
+# Shared with every other audit so they all count the same set of files.
+SKIP_DIRS = _common.SKIP_DIRS
 
 # A fence opens with three or more backticks and closes only on a run at
 # least as long. A shorter run inside is content -- which is how this repo's

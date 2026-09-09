@@ -108,7 +108,11 @@ CODEX_Encyclopedia-/
 ├── README.md              ← this file
 ├── LAYERS.md              ← master layer table
 ├── STRUCTURE.md           ← conventions: naming, frontmatter, cross-links
+├── CONTRIBUTING.md        ← how to check your change before a PR
 ├── CHANGELOG.md           ← version history
+├── SECURITY.md            ← reporting a vulnerability
+├── LICENSE                ← MIT — apps and tooling
+├── LICENSE-docs           ← CC BY-SA 4.0 — the codex
 ├── _assets/               ← reference images
 │
 ├── 00_Physics/            ─┐
@@ -141,7 +145,7 @@ CODEX_Encyclopedia-/
 │                          ─┘
 ├── Codex_macOS/            ← SwiftUI reader source
 ├── Codex_LMS/              ← React curriculum source
-└── tools/                  ← maintenance scripts (link, table, title, diagram audits)
+└── tools/                  ← audits: link, table, title, diagram, stats
 ```
 
 Anything added at the root that isn't a layer must also be registered in
@@ -169,6 +173,37 @@ See [STRUCTURE.md](STRUCTURE.md). In brief:
 - Every section `INDEX.md` is titled `<Layer> — <Section>`, H1 first in the file
 - Link rather than duplicate — each protocol lives in the layer that owns it on the wire
 - Images live in `_assets/`, referenced relatively
+
+## Licensing
+
+Two licenses, split by what the file *is* rather than where it sits:
+
+| What | License | File |
+|------|---------|------|
+| Application source and tooling — `Codex_macOS/`, `Codex_LMS/`, `tools/` | MIT | [LICENSE](LICENSE) |
+| The markdown codex — layer folders, `LAYERS.md`, `STRUCTURE.md` | CC BY-SA 4.0 | [LICENSE-docs](LICENSE-docs) |
+
+MIT on the apps so the Swift and React are freely reusable. ShareAlike on the
+codex because `18_Embedded_Systems/` draws on Meysam Parvizi's Embedded
+Systems Engineering Roadmap, which is CC BY-SA 4.0 — share-alike is what that
+material requires of anything derived from it, not a preference.
+
+### Third-party material — covered by neither
+
+**Files under any `references/` folder retain the rights of their original
+authors.** They are redistributed here for study and are not licensed by this
+repository. Two are worth naming:
+
+- `17_Algorithms_DSA/references/100_leetcode_problems.pdf` — *100 LeetCode
+  Problems Must Do*, a third-party compilation carrying no stated license.
+  It is **not** covered by CC BY-SA 4.0 and cannot be, since this repository
+  does not hold the rights to relicense someone else's compilation. If you
+  redistribute this repo, that file is the one to check first.
+- `18_Embedded_Systems/references/embedded_systems_full_roadmap_book.pdf` — a
+  generated placeholder stub, not Parvizi's book. See *Known gaps*.
+
+If you are the rights holder of anything here and want it removed, open an
+issue and it will be taken down.
 
 ## Known gaps
 
@@ -203,7 +238,7 @@ the LMS:
 | Workflow | Runs | Catches |
 |----------|------|---------|
 | `swift.yml` | `swift build` debug + release, on `macos-14` | The macOS app not compiling |
-| `docs.yml` | `link_audit.py`, `table_audit.py`, `title_audit.py`, `diagram_audit.py` | Broken links, missing H1s, malformed tables, uncanonical section titles, unfenced or missing diagrams |
+| `docs.yml` | `link_audit.py`, `table_audit.py`, `title_audit.py`, `diagram_audit.py`, `stats_audit.py` | Broken links, missing H1s, malformed tables, uncanonical section titles, unfenced or missing diagrams, and stale numbers in this file |
 | `lms.yml` | `npm ci`, build, `npm audit`, Playwright smoke test | CORE not building, or losing progress on reload |
 
 Running every workflow on every PR is deliberate. A *required* status check
@@ -217,7 +252,8 @@ The same checks run locally:
 python3 tools/link_audit.py
 python3 tools/table_audit.py
 python3 tools/title_audit.py
-python3 tools/diagram_audit.py
+python3 tools/diagram_audit.py --self-test && python3 tools/diagram_audit.py
+python3 tools/stats_audit.py
 
 # LMS — build, then smoke-test. `smoke:local` starts the preview server,
 # waits (bounded) for it to actually listen, runs the test, and cleans up.
@@ -235,11 +271,19 @@ cd ..
 
 The audits resolve every relative link against the file containing it,
 skipping code spans so syntax examples aren't counted, and exit non-zero on a
-breakage. Currently:
+breakage. They share one tree walk (`tools/_common.py`) so they cannot
+disagree about which files count.
 
-- 274 markdown files
-- 1009 internal links, 0 broken
+The last of them, `stats_audit.py`, checks the list below against the tree —
+these numbers drifted for exactly as long as nothing was checking them. It
+treats a claim it can no longer *find* as a fault too, so rewording this
+section turns the build red rather than quietly retiring the check.
+
+Currently:
+
+- 277 markdown files
+- 1014 internal links, 0 broken
 - Every file carries an H1, every pipe table well-formed
 - All 138 section indexes titled `<Layer> — <Section>`
-- 101 files carry a diagram, all fenced and within 90 columns; every layer
+- 102 files carry a diagram, all fenced and within 90 columns; every layer
   README shows where its layer sits

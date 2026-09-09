@@ -72,7 +72,7 @@ Codex_LMS/
 ├── public/favicon.svg
 ├── src/
 │   ├── main.jsx            ← React root
-│   ├── CoreApp.jsx         ← the whole app (~5610 lines)
+│   ├── CoreApp.jsx         ← the whole app: phases, topics, widgets
 │   └── storage.js          ← progress persistence adapter
 ├── test/smoke.mjs          ← Playwright end-to-end check
 │

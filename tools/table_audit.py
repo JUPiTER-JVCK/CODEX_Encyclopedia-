@@ -27,7 +27,12 @@ import os
 import re
 import sys
 
-SKIP_DIRS = {".git", "node_modules", "dist", ".build", "Codex.app"}
+# Run as a script, sys.path[0] is tools/; imported by stats_audit,
+# tools/ is already on the path. Either way this resolves.
+import _common
+
+# Shared with every other audit so they all count the same set of files.
+SKIP_DIRS = _common.SKIP_DIRS
 
 # A separator row: pipes and runs of dashes, optionally colon-aligned.
 SEPARATOR_RE = re.compile(r"^\s*\|?(\s*:?-{2,}:?\s*\|)*\s*:?-{2,}:?\s*\|?\s*$")

@@ -28,7 +28,12 @@ import argparse
 import os
 import sys
 
-SKIP_DIRS = {".git", "node_modules", "dist", ".build", "Codex.app"}
+# Run as a script, sys.path[0] is tools/; imported by stats_audit,
+# tools/ is already on the path. Either way this resolves.
+import _common
+
+# Shared with every other audit so they all count the same set of files.
+SKIP_DIRS = _common.SKIP_DIRS
 
 # Section folder -> the one name its INDEX.md heading may use. Mirrors
 # CodexTree.subsectionOrder / CodexTree.pretty in the macOS app; changing a
