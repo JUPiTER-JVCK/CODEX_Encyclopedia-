@@ -22,12 +22,16 @@ SOFTWARE.
 
 ---
 
-This license covers the application source and tooling only:
+This license covers the application source, tooling and repository
+configuration:
 
     Codex_macOS/     SwiftUI reader
     Codex_LMS/       React curriculum (CORE)
     tools/           maintenance and audit scripts
+    .github/         workflows and templates
 
-The markdown codex is licensed separately. See LICENSE-docs.
-Third-party material under any references/ folder is covered by neither.
-See the Licensing section of README.md.
+Everything else authored in this repository — the markdown codex and the
+documentation around it — is licensed under CC BY-SA 4.0. See LICENSE-docs.
+
+Two third-party files are covered by neither; they are named in the
+Licensing section of README.md.

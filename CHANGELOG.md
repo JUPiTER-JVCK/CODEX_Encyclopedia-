@@ -45,8 +45,14 @@ within minutes of the file being edited.
 The five audits now share one tree walk (`tools/_common.py`), replacing four
 copy-pasted `SKIP_DIRS` constants across six walk sites. This is what lets
 the stats audit count the same set the other audits count — a second, subtly
-different walk would not report drift, it would invent it. The refactor was
-verified byte-identical against every audit's prior output.
+different walk would not report drift, it would invent it.
+
+That sentence was false when first written, and review caught it. The initial
+change shared the *constant* and left three audits calling `os.walk`
+themselves across four sites; the guarantee was published in this file, the
+README and the commit message while half the work was missing. It is true
+now: `grep "os\.walk" tools/*.py` matches one line, in `_common.py`, and the
+refactor is verified byte-identical against every audit's prior output.
 
 ### Added — contributor scaffolding
 
@@ -58,8 +64,35 @@ no server, no accounts, and no stored data.
 One narrow exemption came with the template: GitHub templates carry no H1,
 because a template is a fragment pasted into a pull request body and an H1
 renders as a full-width heading on every PR that uses it. `link_audit.py`
-lifts the H1 requirement for `.github/` templates and nothing else — verified
-by confirming an ordinary file missing an H1 is still caught.
+lifts the H1 requirement for `.github/` templates and nothing else.
+
+"Nothing else" also needed review to become true. The first version tested
+`startswith` over two prefixes, which exempted `pull_request_template.md.backup.md`
+and `ISSUE_TEMPLATE-old.md` as well — and the check offered as proof only
+probed an ordinary file, never an adjacent name. It is an equality test and
+an explicit separator now, pinned by `link_audit.py --self-test` in CI, which
+asserts all eight boundary cases including the three that used to slip
+through.
+
+### Fixed — eight review findings on the release itself
+
+Review of the release PR returned eight findings and every one was real. Five
+were overclaims: guarantees written into the README, the CHANGELOG and the
+commit message that the code did not deliver. They are recorded above and in
+the sections they belong to rather than collected here, because a changelog
+that hides its corrections in a footnote is the same failure again.
+
+Two were licensing errors in the release whose purpose was licensing:
+`CONTRIBUTING.md`, `SECURITY.md`, `.github/` and `_assets/README.md` fell
+under neither license, and a directory-wide `references/` carve-out would
+have swept 23 repository-authored index files out of the CC BY-SA grant. Both
+are fixed by making CC BY-SA a default rather than a list, and by naming the
+two genuinely third-party files instead of a folder.
+
+The last was `SECURITY.md` claiming the LMS "sends nothing anywhere" one
+sentence before describing its network request. Progress genuinely never
+leaves the browser; loading Google Fonts genuinely discloses IP and
+user-agent. Both are now stated separately.
 
 ### Fixed — three widgets were unusable without a mouse
 

@@ -212,8 +212,13 @@ One exemption exists, in `.github/`. **GitHub templates carry no H1.** A pull
 request or issue template is a fragment pasted into a body, not a document, so
 an H1 in one renders as a full-width heading on every pull request that uses
 it — they start at `##` instead. `link_audit.py` lifts the H1 requirement for
-`.github/pull_request_template.md` and `.github/ISSUE_TEMPLATE/`, and for
-nothing else; the files are still checked for links and tables.
+`.github/pull_request_template.md` and files inside `.github/ISSUE_TEMPLATE/`,
+and for nothing else; they are still checked for links and tables.
+
+"Nothing else" is asserted, not asserted-in-prose: `link_audit.py --self-test`
+runs the boundary cases in CI. It exists because the first version of this
+rule used a prefix test, which also exempted `pull_request_template.md.backup.md`
+and `ISSUE_TEMPLATE-old.md`. If you widen the exemption, add the case.
 
 ## Numbers in README.md
 

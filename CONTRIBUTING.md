@@ -3,16 +3,22 @@
 [STRUCTURE.md](STRUCTURE.md) says what the conventions are. This says how to
 check you have followed them before opening a pull request.
 
-Five scripts and one browser test enforce every convention in this
-repository. All six run in CI on every pull request, so anything they catch,
-they catch whether or not you ran them — running them first just makes the
-round trip shorter.
+Five scripts and one browser test cover most of the conventions here. All six
+run in CI on every pull request, so anything they catch, they catch whether or
+not you ran them — running them first just makes the round trip shorter.
+
+**A green run is not a conformance proof.** Some conventions in
+[STRUCTURE.md](STRUCTURE.md) have no audit behind them, and the two worth
+knowing are the frontmatter block on content notes (`title`, `layer`,
+`section`, `tags`, `updated`) and registering any new root directory in
+`CodexTree.nonContentDirs`. Both are checked by a reader or not at all.
 
 ## Before opening a pull request
 
 ### If you touched markdown
 
 ```sh
+python3 tools/link_audit.py --self-test   # H1 exemption covers templates only
 python3 tools/link_audit.py      # relative links resolve; every file has an H1
 python3 tools/table_audit.py     # pipe tables well-formed
 python3 tools/title_audit.py     # section indexes titled "<Layer> — <Section>"
@@ -20,11 +26,19 @@ python3 tools/diagram_audit.py --self-test && python3 tools/diagram_audit.py
 python3 tools/stats_audit.py     # README's own numbers still true
 ```
 
-Each exits non-zero and names the file and line. No arguments needed — they
-find the repository root themselves.
+Each exits non-zero and names the file at fault. Where the fault has a line —
+a malformed table row, an over-wide diagram — you get the line too; where it
+does not, you get what identifies it instead: a broken link and its target, a
+section index and the section it should name, a README claim and the number
+the tree actually holds. No arguments needed — they find the repository root
+themselves.
 
-Two need a word of explanation:
+Three need a word of explanation:
 
+- **`link_audit.py --self-test`** asserts that the H1 exemption covers the
+  `.github/` templates and nothing adjacent to them. It exists because the
+  first version of that rule was a prefix test that also exempted
+  `pull_request_template.md.backup.md`.
 - **`diagram_audit.py --self-test`** runs before the audit itself because the
   audit's fence parsing has been wrong twice. The self-test asserts the
   CommonMark fence rules directly, so a regression there fails loudly instead

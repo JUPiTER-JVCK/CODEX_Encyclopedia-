@@ -180,8 +180,14 @@ Two licenses, split by what the file *is* rather than where it sits:
 
 | What | License | File |
 |------|---------|------|
-| Application source and tooling — `Codex_macOS/`, `Codex_LMS/`, `tools/` | MIT | [LICENSE](LICENSE) |
-| The markdown codex — layer folders, `LAYERS.md`, `STRUCTURE.md` | CC BY-SA 4.0 | [LICENSE-docs](LICENSE-docs) |
+| Application source, tooling and configuration — `Codex_macOS/`, `Codex_LMS/`, `tools/`, `.github/` | MIT | [LICENSE](LICENSE) |
+| **Everything else authored here** — the codex, and every document around it | CC BY-SA 4.0 | [LICENSE-docs](LICENSE-docs) |
+
+The second row is a default rather than a list, deliberately. The first draft
+enumerated four root documents, and review found four *others* — including
+`CONTRIBUTING.md` and `SECURITY.md` — sitting under neither license. In a
+release whose point was to fix exactly that, the fix had a hole in it. A
+default cannot develop one.
 
 MIT on the apps so the Swift and React are freely reusable. ShareAlike on the
 codex because `18_Embedded_Systems/` draws on Meysam Parvizi's Embedded
@@ -190,9 +196,8 @@ material requires of anything derived from it, not a preference.
 
 ### Third-party material — covered by neither
 
-**Files under any `references/` folder retain the rights of their original
-authors.** They are redistributed here for study and are not licensed by this
-repository. Two are worth naming:
+**Two files** are redistributed here for study and are not licensed by this
+repository. They retain their original authors' rights:
 
 - `17_Algorithms_DSA/references/100_leetcode_problems.pdf` — *100 LeetCode
   Problems Must Do*, a third-party compilation carrying no stated license.
@@ -201,6 +206,12 @@ repository. Two are worth naming:
   redistribute this repo, that file is the one to check first.
 - `18_Embedded_Systems/references/embedded_systems_full_roadmap_book.pdf` — a
   generated placeholder stub, not Parvizi's book. See *Known gaps*.
+
+This is a list of two files, not a rule about `references/` folders. An
+earlier draft said everything under any `references/` folder was third-party,
+which would have swept the 23 `references/INDEX.md` entry points — written
+for this codex, describing its own sources — out of the CC BY-SA grant.
+Anything third-party added later belongs on this list.
 
 If you are the rights holder of anything here and want it removed, open an
 issue and it will be taken down.
@@ -249,7 +260,7 @@ The same checks run locally:
 
 ```sh
 # Docs — each exits non-zero on a breakage
-python3 tools/link_audit.py
+python3 tools/link_audit.py --self-test && python3 tools/link_audit.py
 python3 tools/table_audit.py
 python3 tools/title_audit.py
 python3 tools/diagram_audit.py --self-test && python3 tools/diagram_audit.py
@@ -282,7 +293,7 @@ section turns the build red rather than quietly retiring the check.
 Currently:
 
 - 277 markdown files
-- 1014 internal links, 0 broken
+- 1015 internal links, 0 broken
 - Every file carries an H1, every pipe table well-formed
 - All 138 section indexes titled `<Layer> — <Section>`
 - 102 files carry a diagram, all fenced and within 90 columns; every layer

@@ -24,9 +24,6 @@ import urllib.parse
 # tools/ is already on the path. Either way this resolves.
 import _common
 
-# Shared with every other audit so they all count the same set of files.
-SKIP_DIRS = _common.SKIP_DIRS
-
 # Images the codex references but does not ship. Documented in
 # _assets/README.md; listed here so the audit reports them separately
 # instead of failing the build over a known, deliberate gap.
@@ -41,14 +38,46 @@ KNOWN_MISSING_IMAGES = {
 # not documents. An H1 in one renders as a full-width heading on every PR
 # that uses it, so they conventionally start at "##". They are still checked
 # for links and tables; only the H1 requirement is lifted.
-H1_EXEMPT_PREFIXES = (
-    os.path.join(".github", "pull_request_template.md"),
-    os.path.join(".github", "ISSUE_TEMPLATE"),
-)
+#
+# Exactly two things are exempt: that one file, and files inside the issue
+# template directory. This was a `startswith` test over both names until
+# review pointed out what that also swallowed — `pull_request_template.md.backup.md`
+# and `ISSUE_TEMPLATE-old.md` are neither templates nor exempt, but both
+# carry the prefix. Hence an equality test and an explicit separator, and
+# H1_EXEMPT_CASES below so the boundary is asserted rather than described.
+H1_EXEMPT_FILE = os.path.join(".github", "pull_request_template.md")
+H1_EXEMPT_DIR = os.path.join(".github", "ISSUE_TEMPLATE") + os.sep
 
 
 def needs_h1(rel: str) -> bool:
-    return not rel.startswith(H1_EXEMPT_PREFIXES)
+    return rel != H1_EXEMPT_FILE and not rel.startswith(H1_EXEMPT_DIR)
+
+
+# (path, does it still need an H1). The three True rows next to a template
+# name are the regression: each one was exempt before the fix above.
+H1_EXEMPT_CASES = [
+    (os.path.join(".github", "pull_request_template.md"), False),
+    (os.path.join(".github", "ISSUE_TEMPLATE", "bug.md"), False),
+    (os.path.join(".github", "ISSUE_TEMPLATE", "feature_request.md"), False),
+    (os.path.join(".github", "pull_request_template.md.backup.md"), True),
+    (os.path.join(".github", "ISSUE_TEMPLATE-old.md"), True),
+    (os.path.join(".github", "pull_request_template.md.orig"), True),
+    ("README.md", True),
+    (os.path.join("00_Physics", "topics", "energy.md"), True),
+]
+
+
+def self_test() -> int:
+    """Assert the H1 exemption covers the templates and nothing adjacent."""
+    bad = 0
+    for rel, want in H1_EXEMPT_CASES:
+        got = needs_h1(rel)
+        ok = got == want
+        bad += not ok
+        print(f"  {'ok  ' if ok else 'FAIL'}  needs_h1={got!s:5s}  {rel}")
+    total = len(H1_EXEMPT_CASES)
+    print(f"\n{total - bad}/{total} H1 exemption cases pass")
+    return 1 if bad else 0
 
 
 LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)]+)\)")
@@ -121,7 +150,12 @@ def main() -> int:
     parser.add_argument("--root", default=os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--self-test", action="store_true",
+                        help="assert the H1 exemption boundary, then exit")
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     stats, broken, missing_images, no_h1 = audit(args.root)
 

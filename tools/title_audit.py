@@ -32,9 +32,6 @@ import sys
 # tools/ is already on the path. Either way this resolves.
 import _common
 
-# Shared with every other audit so they all count the same set of files.
-SKIP_DIRS = _common.SKIP_DIRS
-
 # Section folder -> the one name its INDEX.md heading may use. Mirrors
 # CodexTree.subsectionOrder / CodexTree.pretty in the macOS app; changing a
 # name here means changing it there too.
@@ -117,16 +114,14 @@ def main() -> int:
     # itself two ways across its six indexes.
     by_layer: dict[str, dict[str, list[str]]] = {}
 
-    for dirpath, dirnames, filenames in os.walk(args.root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        if "INDEX.md" not in filenames:
+    for path, rel in _common.walk_markdown(args.root):
+        if os.path.basename(path) != "INDEX.md":
             continue
+        dirpath = os.path.dirname(path)
         section = os.path.basename(dirpath)
         if section not in CANONICAL:
             continue
 
-        path = os.path.join(dirpath, "INDEX.md")
-        rel = os.path.relpath(path, args.root)
         total += 1
         faults.extend((rel, kind, detail)
                       for kind, detail in audit_file(path, section))

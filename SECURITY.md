@@ -16,11 +16,19 @@ no server, no accounts, no network service, and stores nothing about anyone.
 That rules out most of what a security policy usually covers, so it is worth
 being specific about what is left:
 
-- **`Codex_LMS/`** is a static single-page React app. It stores learning
-  progress in `localStorage` under one key and sends nothing anywhere. Its
-  only network request is a Google Fonts stylesheet, which it works without.
-  A finding here would most likely be a dependency advisory — `npm audit`
-  runs in CI on every pull request.
+- **`Codex_LMS/`** is a static single-page React app with no backend. Your
+  learning progress is held in `localStorage` under one key and is never
+  transmitted — it does not leave the browser profile it was written in.
+
+  That is not the same as the page making no requests. It loads three
+  typefaces from Google Fonts, and any such request discloses the usual
+  metadata — IP address, user-agent, referring page — to Google. Nothing
+  about your progress goes with it, but the request happens on every load.
+  Self-hosting the fonts would remove it; the app already falls back to
+  system faces when the fetch fails, so the dependency is cosmetic.
+
+  Beyond that, a finding here would most likely be a dependency advisory —
+  `npm audit` runs in CI on every pull request.
 - **`Codex_macOS/`** reads markdown from disk and renders it. It parses
   untrusted input in the sense that it will open any file you point it at, so
   a malformed document causing a crash or worse is in scope.

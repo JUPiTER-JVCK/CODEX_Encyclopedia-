@@ -30,6 +30,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The H1 exemption for .github/ templates was a prefix test, which
+      # also swallowed names like pull_request_template.md.backup.md.
+      # These cases assert the boundary rather than describing it.
+      - name: Link audit self-test
+        run: python3 tools/link_audit.py --self-test
+
       # Every relative link resolves, and every file carries an H1.
       - name: Link audit
         run: python3 tools/link_audit.py

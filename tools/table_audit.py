@@ -31,9 +31,6 @@ import sys
 # tools/ is already on the path. Either way this resolves.
 import _common
 
-# Shared with every other audit so they all count the same set of files.
-SKIP_DIRS = _common.SKIP_DIRS
-
 # A separator row: pipes and runs of dashes, optionally colon-aligned.
 SEPARATOR_RE = re.compile(r"^\s*\|?(\s*:?-{2,}:?\s*\|)*\s*:?-{2,}:?\s*\|?\s*$")
 
@@ -94,16 +91,10 @@ def main() -> int:
     total_files = 0
     all_faults: list[tuple[str, int, str, str]] = []
 
-    for dirpath, dirnames, filenames in os.walk(args.root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        for name in sorted(filenames):
-            if not name.endswith(".md"):
-                continue
-            path = os.path.join(dirpath, name)
-            total_files += 1
-            rel = os.path.relpath(path, args.root)
-            all_faults.extend((rel, ln, kind, detail)
-                              for ln, kind, detail in audit_file(path))
+    for path, rel in _common.walk_markdown(args.root):
+        total_files += 1
+        all_faults.extend((rel, ln, kind, detail)
+                          for ln, kind, detail in audit_file(path))
 
     print(f"markdown files   {total_files}")
     print(f"malformed tables {len(all_faults)}")
