@@ -1,6 +1,6 @@
 name: Docs
 
-# Wires up the audit scripts. All four exit non-zero on a failure, so they
+# Wires up the audit scripts. All five exit non-zero on a failure, so they
 # were always meant to gate — they just had nothing calling them except a
 # human remembering to.
 
@@ -30,6 +30,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The H1 exemption for .github/ templates was a prefix test, which
+      # also swallowed names like pull_request_template.md.backup.md.
+      # These cases assert the boundary rather than describing it.
+      - name: Link audit self-test
+        run: python3 tools/link_audit.py --self-test
+
       # Every relative link resolves, and every file carries an H1.
       - name: Link audit
         run: python3 tools/link_audit.py
@@ -56,3 +62,11 @@ jobs:
 
       - name: Diagram audit
         run: python3 tools/diagram_audit.py
+
+      # The numbers README quotes about itself — file, link, index and
+      # diagram counts. They drifted because nothing checked them: the
+      # diagram count sat at 101 against a real 102. A claim this cannot
+      # find fails the same as a claim that is wrong, so rewording the
+      # README turns the build red instead of quietly retiring the check.
+      - name: Stats audit
+        run: python3 tools/stats_audit.py

@@ -1,6 +1,98 @@
 # CHANGELOG
 
-## v3.6 — 2026-09-07
+## v3.6 — 2026-09-09
+
+First tagged release. The version history below describes v1 through v3.5,
+but none of it was ever tagged — no release existed, and the only entry in
+the Releases tab was one named `Main` pointing five merges into the past.
+This is the first version that exists as far as git is concerned.
+
+### Added — licensing
+
+The repository had no LICENSE, which meant all rights reserved: legally
+unusable by anyone, including for the purpose it was written for. Two
+licenses now, split by what a file *is*:
+
+- **MIT** — `Codex_macOS/`, `Codex_LMS/`, `tools/`. See `LICENSE`.
+- **CC BY-SA 4.0** — the markdown codex. See `LICENSE-docs`.
+
+ShareAlike on the codex is not a preference. `18_Embedded_Systems/` draws on
+Meysam Parvizi's Embedded Systems Engineering Roadmap, which is CC BY-SA 4.0,
+and that is what it requires of anything derived from it.
+
+**Third-party material under any `references/` folder is covered by neither**
+and retains its original authors' rights. `100_leetcode_problems.pdf` is the
+one to know about: a 4.9 MB compilation with no stated license, which this
+repository cannot relicense because it does not hold the rights to. Recorded
+in README.md rather than quietly shipped.
+
+### Added — `stats_audit.py`, and a shared tree walk
+
+README.md quotes numbers about itself. Nothing checked them, so they drifted:
+the diagram count read 101 against a real 102. Every other convention here is
+enforced by a script for exactly this reason, so this is the fifth.
+
+The design point is how it fails. A regex checker has a failure mode worse
+than the drift it prevents — someone rewords the sentence, the pattern stops
+matching, and it reports success forever while checking nothing. So a claim
+it cannot *find* is a fault too, and rewording that section turns the build
+red. Both modes were verified by breaking them deliberately.
+
+It earned its keep before it was finished: adding the Licensing section above
+put two new links in README, and the audit caught the count going stale
+within minutes of the file being edited.
+
+The five audits now share one tree walk (`tools/_common.py`), replacing four
+copy-pasted `SKIP_DIRS` constants across six walk sites. This is what lets
+the stats audit count the same set the other audits count — a second, subtly
+different walk would not report drift, it would invent it.
+
+That sentence was false when first written, and review caught it. The initial
+change shared the *constant* and left three audits calling `os.walk`
+themselves across four sites; the guarantee was published in this file, the
+README and the commit message while half the work was missing. It is true
+now: `grep "os\.walk" tools/*.py` matches one line, in `_common.py`, and the
+refactor is verified byte-identical against every audit's prior output.
+
+### Added — contributor scaffolding
+
+`CONTRIBUTING.md` (how to run the six checks — the conventions were written
+down, the way to verify them was not), `.github/pull_request_template.md`,
+and `SECURITY.md` scoped to what could actually go wrong in a repository with
+no server, no accounts, and no stored data.
+
+One narrow exemption came with the template: GitHub templates carry no H1,
+because a template is a fragment pasted into a pull request body and an H1
+renders as a full-width heading on every PR that uses it. `link_audit.py`
+lifts the H1 requirement for `.github/` templates and nothing else.
+
+"Nothing else" also needed review to become true. The first version tested
+`startswith` over two prefixes, which exempted `pull_request_template.md.backup.md`
+and `ISSUE_TEMPLATE-old.md` as well — and the check offered as proof only
+probed an ordinary file, never an adjacent name. It is an equality test and
+an explicit separator now, pinned by `link_audit.py --self-test` in CI, which
+asserts all eight boundary cases including the three that used to slip
+through.
+
+### Fixed — eight review findings on the release itself
+
+Review of the release PR returned eight findings and every one was real. Five
+were overclaims: guarantees written into the README, the CHANGELOG and the
+commit message that the code did not deliver. They are recorded above and in
+the sections they belong to rather than collected here, because a changelog
+that hides its corrections in a footnote is the same failure again.
+
+Two were licensing errors in the release whose purpose was licensing:
+`CONTRIBUTING.md`, `SECURITY.md`, `.github/` and `_assets/README.md` fell
+under neither license, and a directory-wide `references/` carve-out would
+have swept 23 repository-authored index files out of the CC BY-SA grant. Both
+are fixed by making CC BY-SA a default rather than a list, and by naming the
+two genuinely third-party files instead of a folder.
+
+The last was `SECURITY.md` claiming the LMS "sends nothing anywhere" one
+sentence before describing its network request. Progress genuinely never
+leaves the browser; loading Google Fonts genuinely discloses IP and
+user-agent. Both are now stated separately.
 
 ### Fixed — three widgets were unusable without a mouse
 

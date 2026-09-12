@@ -31,7 +31,9 @@ import os
 import re
 import sys
 
-SKIP_DIRS = {".git", "node_modules", "dist", ".build", "Codex.app"}
+# Run as a script, sys.path[0] is tools/; imported by stats_audit,
+# tools/ is already on the path. Either way this resolves.
+import _common
 
 # A fence opens with three or more backticks and closes only on a run at
 # least as long. A shorter run inside is content -- which is how this repo's
@@ -95,8 +97,7 @@ def audit_file(path: str) -> tuple[list[tuple[int, str, str]], bool]:
 def layer_readmes(root: str) -> list[str]:
     """Every layer folder's README.md, found by shape rather than by name."""
     found = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
+    for dirpath, dirnames, filenames in _common.walk_dirs(root):
         if "README.md" in filenames and SUBSECTIONS & set(dirnames):
             found.append(os.path.join(dirpath, "README.md"))
     return sorted(found)
@@ -169,18 +170,12 @@ def main() -> int:
     faults: list[tuple[str, int, str, str]] = []
     files = diagrams = 0
 
-    for dirpath, dirnames, filenames in os.walk(args.root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        for name in sorted(filenames):
-            if not name.endswith(".md"):
-                continue
-            path = os.path.join(dirpath, name)
-            rel = os.path.relpath(path, args.root)
-            files += 1
-            file_faults, has = audit_file(path)
-            diagrams += has
-            faults.extend((rel, ln, kind, detail)
-                          for ln, kind, detail in file_faults)
+    for path, rel in _common.walk_markdown(args.root):
+        files += 1
+        file_faults, has = audit_file(path)
+        diagrams += has
+        faults.extend((rel, ln, kind, detail)
+                      for ln, kind, detail in file_faults)
 
     layers = layer_readmes(args.root)
     for path in layers:

@@ -1,0 +1,52 @@
+# License for the codex (documentation)
+
+Copyright (c) 2026 JUPiTER-JVCK
+
+**Everything authored in this repository that is not covered by LICENSE is
+covered by this one.** That is the markdown codex — the layer folders
+`00_Physics/` through `19_Industrial_Protocols/` and `Network/` — together
+with every document around it, including `README.md`, `LAYERS.md`,
+`STRUCTURE.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md` and
+`_assets/README.md`.
+
+It is written as a default rather than a list on purpose: the first draft
+enumerated four root documents, and review found that four *other* files had
+landed under neither license. A default cannot develop that gap.
+
+This material is licensed under the
+
+    Creative Commons Attribution-ShareAlike 4.0 International License
+    SPDX-License-Identifier: CC-BY-SA-4.0
+
+Human-readable summary:
+    https://creativecommons.org/licenses/by-sa/4.0/
+
+Full legal code, which is the authoritative text and governs in full:
+    https://creativecommons.org/licenses/by-sa/4.0/legalcode
+
+The canonical text at that URL is referenced rather than copied so that this
+file cannot drift from, or misstate, the license it grants.
+
+## In short
+
+You may share and adapt this material, including commercially, provided you:
+
+- **Attribute** — credit this repository, link to the license, and state
+  whether you made changes.
+- **ShareAlike** — distribute any adapted material under CC BY-SA 4.0.
+
+## Why ShareAlike
+
+`18_Embedded_Systems/` draws on the Embedded Systems Engineering Roadmap by
+Meysam Parvizi, which is itself CC BY-SA 4.0. ShareAlike is not a preference
+here; it is what that material requires of anything derived from it.
+
+## What this does not cover
+
+- **Application source, tooling and configuration** — `Codex_macOS/`,
+  `Codex_LMS/`, `tools/` and `.github/` are MIT. See LICENSE.
+- **Two third-party files**, named in the Licensing section of README.md.
+  They retain their original authors' rights and are covered by neither
+  license. This is a list of two files, not a rule about directories: the
+  23 `references/INDEX.md` entry points are written for this codex and are
+  covered by this license like the rest of it.

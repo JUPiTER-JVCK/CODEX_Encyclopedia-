@@ -20,15 +20,9 @@ import re
 import sys
 import urllib.parse
 
-# Directories holding application code or build output rather than codex
-# content. Mirrors CodexTree.nonContentDirs in the macOS app — keep in sync.
-SKIP_DIRS = {
-    ".git",
-    "node_modules",
-    "dist",
-    ".build",
-    "Codex.app",
-}
+# Run as a script, sys.path[0] is tools/; imported by stats_audit,
+# tools/ is already on the path. Either way this resolves.
+import _common
 
 # Images the codex references but does not ship. Documented in
 # _assets/README.md; listed here so the audit reports them separately
@@ -39,6 +33,52 @@ KNOWN_MISSING_IMAGES = {
     "logic_gates_explained.png",
     "embedded_systems_roadmap.png",
 }
+
+# GitHub templates are fragments pasted into a pull request or issue body,
+# not documents. An H1 in one renders as a full-width heading on every PR
+# that uses it, so they conventionally start at "##". They are still checked
+# for links and tables; only the H1 requirement is lifted.
+#
+# Exactly two things are exempt: that one file, and files inside the issue
+# template directory. This was a `startswith` test over both names until
+# review pointed out what that also swallowed — `pull_request_template.md.backup.md`
+# and `ISSUE_TEMPLATE-old.md` are neither templates nor exempt, but both
+# carry the prefix. Hence an equality test and an explicit separator, and
+# H1_EXEMPT_CASES below so the boundary is asserted rather than described.
+H1_EXEMPT_FILE = os.path.join(".github", "pull_request_template.md")
+H1_EXEMPT_DIR = os.path.join(".github", "ISSUE_TEMPLATE") + os.sep
+
+
+def needs_h1(rel: str) -> bool:
+    return rel != H1_EXEMPT_FILE and not rel.startswith(H1_EXEMPT_DIR)
+
+
+# (path, does it still need an H1). The three True rows next to a template
+# name are the regression: each one was exempt before the fix above.
+H1_EXEMPT_CASES = [
+    (os.path.join(".github", "pull_request_template.md"), False),
+    (os.path.join(".github", "ISSUE_TEMPLATE", "bug.md"), False),
+    (os.path.join(".github", "ISSUE_TEMPLATE", "feature_request.md"), False),
+    (os.path.join(".github", "pull_request_template.md.backup.md"), True),
+    (os.path.join(".github", "ISSUE_TEMPLATE-old.md"), True),
+    (os.path.join(".github", "pull_request_template.md.orig"), True),
+    ("README.md", True),
+    (os.path.join("00_Physics", "topics", "energy.md"), True),
+]
+
+
+def self_test() -> int:
+    """Assert the H1 exemption covers the templates and nothing adjacent."""
+    bad = 0
+    for rel, want in H1_EXEMPT_CASES:
+        got = needs_h1(rel)
+        ok = got == want
+        bad += not ok
+        print(f"  {'ok  ' if ok else 'FAIL'}  needs_h1={got!s:5s}  {rel}")
+    total = len(H1_EXEMPT_CASES)
+    print(f"\n{total - bad}/{total} H1 exemption cases pass")
+    return 1 if bad else 0
+
 
 LINK_RE = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)]+)\)")
 IMAGE_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
@@ -59,13 +99,7 @@ def strip_code(text: str) -> str:
 
 
 def markdown_files(root: str) -> list[str]:
-    found = []
-    for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
-        found.extend(
-            os.path.join(dirpath, f) for f in filenames if f.endswith(".md")
-        )
-    return sorted(found)
+    return sorted(path for path, _ in _common.walk_markdown(root))
 
 
 def audit(root: str) -> tuple[dict, list, list, list]:
@@ -75,8 +109,9 @@ def audit(root: str) -> tuple[dict, list, list, list]:
     for path in markdown_files(root):
         stats["files"] += 1
         raw = open(path, encoding="utf-8").read()
-        if not re.search(r"^# ", raw, re.M):
-            no_h1.append(os.path.relpath(path, root))
+        rel = os.path.relpath(path, root)
+        if needs_h1(rel) and not re.search(r"^# ", raw, re.M):
+            no_h1.append(rel)
 
         body = strip_code(raw)
         for regex, is_image in ((LINK_RE, False), (IMAGE_RE, True)):
@@ -115,7 +150,12 @@ def main() -> int:
     parser.add_argument("--root", default=os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--self-test", action="store_true",
+                        help="assert the H1 exemption boundary, then exit")
     args = parser.parse_args()
+
+    if args.self_test:
+        return self_test()
 
     stats, broken, missing_images, no_h1 = audit(args.root)
 
