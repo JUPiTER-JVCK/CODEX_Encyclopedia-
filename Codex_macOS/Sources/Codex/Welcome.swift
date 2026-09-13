@@ -5,14 +5,17 @@ import SwiftUI
 struct WelcomeView: View {
     @EnvironmentObject var state: AppState
 
-    private var stats: (layers: Int, files: Int, tools: Int) {
-        let layers = state.root.children.flatMap { $0.children }.count
-        let files = state.allFiles.count
-        let tools = (try? FileManager.default.contentsOfDirectory(
-            at: state.projectRoot.appendingPathComponent("Tools"),
-            includingPropertiesForKeys: nil
-        ).filter { $0.pathExtension == "html" }.count) ?? 0
-        return (layers, files, tools)
+    private var stats: (layers: Int, files: Int) {
+        // Count layer folders only. The "Top-level" band holds the four root
+        // documents as files, not layers, and counting them made this read 27
+        // against the 23 that LAYERS.md states and tools/stats_audit.py
+        // enforces. Filtering on isFile is structural; matching the band by
+        // name would break the moment the label changed.
+        let layers = state.root.children
+            .flatMap { $0.children }
+            .filter { !$0.isFile }
+            .count
+        return (layers, state.allFiles.count)
     }
 
     var body: some View {
@@ -47,13 +50,12 @@ struct WelcomeView: View {
             }
             VStack(spacing: 4) {
                 Text("Codex").font(Theme.FontStyle.displayLarge).foregroundColor(Theme.text)
-                Text("Computing Stack Knowledge Base · v3")
+                Text("Computing Stack Knowledge Base · v\(CodexInfo.version)")
                     .font(Theme.FontStyle.title).foregroundColor(Theme.subtext)
             }
             HStack(spacing: 18) {
                 StatBubble(value: "\(stats.layers)", label: "Layers", tint: Theme.blue)
                 StatBubble(value: "\(stats.files)", label: "Docs", tint: Theme.teal)
-                StatBubble(value: "\(stats.tools)", label: "Tools", tint: Theme.green)
             }
             .padding(.top, 8)
         }
@@ -65,8 +67,8 @@ struct WelcomeView: View {
     private var quickActions: some View {
         let readme = state.projectRoot.appendingPathComponent("README.md")
         let layers = state.projectRoot.appendingPathComponent("LAYERS.md")
+        let structure = state.projectRoot.appendingPathComponent("STRUCTURE.md")
         let changelog = state.projectRoot.appendingPathComponent("CHANGELOG.md")
-        let tools = state.projectRoot.appendingPathComponent("Tools/README.md")
 
         return VStack(alignment: .leading, spacing: 10) {
             SectionTitle("Quick Start")
@@ -81,10 +83,14 @@ struct WelcomeView: View {
                           subtitle: "Foundations → Compute → Network → Cross-cutting") {
                     if FileManager.default.fileExists(atPath: layers.path) { state.openFile(layers) }
                 }
-                QuickCard(icon: "wrench.and.screwdriver.fill", tint: Theme.green,
-                          title: "Open Tools",
-                          subtitle: "14 standalone network & security utilities") {
-                    if FileManager.default.fileExists(atPath: tools.path) { state.openFile(tools) }
+                // This slot used to read "Open Tools — 14 standalone network &
+                // security utilities". There is no Tools/ directory in this
+                // repository, the stat bubble beside it read 0, and clicking
+                // it did nothing. STRUCTURE.md is a real file a reader wants.
+                QuickCard(icon: "ruler.fill", tint: Theme.green,
+                          title: "Conventions",
+                          subtitle: "Naming, frontmatter, diagrams, cross-links") {
+                    if FileManager.default.fileExists(atPath: structure.path) { state.openFile(structure) }
                 }
                 QuickCard(icon: "magnifyingglass", tint: Theme.mauve,
                           title: "Command Palette",
@@ -98,7 +104,7 @@ struct WelcomeView: View {
                 }
                 QuickCard(icon: "folder.fill", tint: Theme.teal,
                           title: "Reveal in Finder",
-                          subtitle: "Open the Codex_v2 directory") {
+                          subtitle: "Open \(state.projectRoot.lastPathComponent)") {
                     LinkResolver.revealInFinder(state.projectRoot)
                 }
             }

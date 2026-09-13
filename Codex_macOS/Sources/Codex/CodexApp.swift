@@ -1,6 +1,18 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Version
+
+/// One place for the version the app shows itself as.
+///
+/// It was previously spelled "v3" in the window title and the Welcome
+/// subtitle, "3.2" in Info.plist, and "Computing Stack v3" in the sidebar —
+/// four literals, none agreeing, all stale against the released 3.6. Keep
+/// this in step with CHANGELOG.md's top entry.
+enum CodexInfo {
+    static let version = "3.6"
+}
+
 // MARK: - App entry
 
 @main
@@ -8,7 +20,7 @@ struct CodexApp: App {
     @StateObject private var state = AppState.shared
 
     var body: some Scene {
-        WindowGroup("Codex v3") {
+        WindowGroup("Codex v\(CodexInfo.version)") {
             RootView()
                 .environmentObject(state)
                 .frame(minWidth: 1180, minHeight: 740)
@@ -33,6 +45,11 @@ struct CodexApp: App {
                     .keyboardShortcut("0", modifiers: [.command])
             }
             CommandMenu("Navigation") {
+                // ⌘H is Hide and ⌘⌥H is Hide Others, both reserved by macOS;
+                // ⌘⇧H is free.
+                Button("Welcome") { state.showWelcome() }
+                    .keyboardShortcut("h", modifiers: [.command, .shift])
+                Divider()
                 Button("Back") { if let u = state.history.goBack() { state.openFile(u, pushHistory: false) } }
                     .keyboardShortcut("[", modifiers: [.command])
                     .disabled(!state.history.canGoBack)
@@ -108,10 +125,6 @@ final class AppState: ObservableObject {
             let s = candidate.appendingPathComponent("STRUCTURE.md")
             if FileManager.default.fileExists(atPath: r.path),
                FileManager.default.fileExists(atPath: s.path) { return candidate }
-            let child = candidate.appendingPathComponent("Codex_v2")
-            if FileManager.default.fileExists(atPath: child.appendingPathComponent("README.md").path) {
-                return child
-            }
             candidate = candidate.deletingLastPathComponent()
         }
         return URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
@@ -140,6 +153,17 @@ final class AppState: ObservableObject {
 
     func closeAllTabs() {
         openTabs.removeAll()
+        selectedTab = nil
+    }
+
+    /// Return to the Welcome screen without losing the open tabs.
+    ///
+    /// `mainPane` shows WelcomeView whenever nothing is selected, so clearing
+    /// the selection is all this needs. Until this existed the only route back
+    /// was Close All Tabs, which reached Welcome by throwing away everything
+    /// you had open — a destructive action standing in for a navigation one.
+    /// TabStrip renders a nil selection correctly already: no pill is active.
+    func showWelcome() {
         selectedTab = nil
     }
 
