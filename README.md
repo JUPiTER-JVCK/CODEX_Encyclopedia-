@@ -65,13 +65,27 @@ Requires macOS 13+ and the Xcode command-line tools.
 sudo xcodebuild -license accept
 xcode-select --install
 
-# Build and launch (produces ./Codex.app)
-./Codex_macOS/package_app.sh --run
+# Build once and put Codex in /Applications
+./Codex_macOS/package_app.sh --icon --install
 ```
 
-Other modes: `--debug` (faster build), `--install` (also copy to
-`/Applications`), `--icon` (regenerate the AppIcon), or no flag to build
-without launching.
+After that it is an ordinary Mac app: **double-click it in Applications, the
+Dock or Launchpad.** No terminal, and no rebuild until the source changes.
+`--install` ad-hoc signs the bundle so Gatekeeper allows it and refreshes
+Launch Services so Spotlight finds it immediately.
+
+`--icon` forces a fresh AppIcon. It matters on the first run after upgrading:
+the script will otherwise reuse a cached `Codex.app.icon-backup/AppIcon.icns`
+if one exists, and on machines that built an earlier version that cache holds
+the old blank icon. It says so when it reuses one.
+
+Other modes: `--run` (build, then open it), `--debug` (faster build), or no
+flag to build `./Codex.app` without launching.
+
+The icon is drawn at build time by a short AppKit renderer inside the script —
+the same `books.vertical.fill` mark and gradient the app's own Welcome screen
+uses, so the Dock matches the window. It needs nothing beyond the Swift
+toolchain you already installed to build the app.
 
 The app finds the codex by checking, in order: the `$CODEX_ROOT` environment
 variable, the `project_path` resource recorded in the bundle at build time,
@@ -232,13 +246,18 @@ Honest inventory of what isn't here yet:
   10-page generated stub, not Parvizi's actual roadmap book. The real source
   is [github.com/m3y54m/Embedded-Engineering-Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap)
   (CC BY-SA 4.0).
-- **The macOS app builds in CI but has not been run.** `swift.yml` compiles
-  it debug and release on every PR, so "does it compile" is now answered
-  automatically — but nothing exercises the UI. The behavioural questions in
-  [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues) still need a
-  human at a Mac: sidebar vibrancy under an opaque parent background, whether
-  code blocks scroll or wrap, and whether the section-index titles now read as
-  intended (sidebar "Overview", ⌘P "Circuit Board — Languages").
+- **The macOS app has been launched once, and most of it is still unseen.**
+  `swift.yml` compiles it debug and release on every PR, and the Welcome
+  screen has now been looked at on a real Mac — which immediately found a
+  Quick Start card advertising 14 utilities that do not exist, a layer count
+  of 27 against the audited 23, and a blank app icon. All three are fixed.
+  Nothing *automated* exercises the UI, so the rest is still only reasoned
+  about: the behavioural questions in
+  [`Codex_macOS/README.md`](Codex_macOS/README.md#known-issues) — sidebar
+  vibrancy under an opaque parent background, whether code blocks scroll or
+  wrap, and whether the section-index titles read as intended (sidebar
+  "Overview", ⌘P "Circuit Board — Languages") — need someone to open those
+  screens and look.
 
 ## Verification
 

@@ -28,23 +28,33 @@ struct SidebarView: View {
         .overlay(Rectangle().fill(Theme.hairline).frame(width: 1), alignment: .trailing)
     }
 
+    /// The app mark, which doubles as the way back to Welcome.
+    ///
+    /// A real Button rather than an `onTapGesture` on the stack, so it is
+    /// reachable by Tab and operable by Return like any other control.
     private var sidebarHeader: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(LinearGradient(colors: [Theme.blue, Theme.lavender],
-                                         startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 26, height: 26)
-                Image(systemName: "c.square.fill")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(Theme.crust)
+        Button(action: { state.showWelcome() }) {
+            HStack(spacing: 10) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(LinearGradient(colors: [Theme.blue, Theme.lavender],
+                                             startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 26, height: 26)
+                    Image(systemName: "c.square.fill")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Theme.crust)
+                }
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Codex").font(Theme.FontStyle.headline).foregroundColor(Theme.text)
+                    Text("Computing Stack v\(CodexInfo.version)")
+                        .font(Theme.FontStyle.caption).foregroundColor(Theme.overlay1)
+                }
+                Spacer()
             }
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Codex").font(Theme.FontStyle.headline).foregroundColor(Theme.text)
-                Text("Computing Stack v3").font(Theme.FontStyle.caption).foregroundColor(Theme.overlay1)
-            }
-            Spacer()
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .help("Welcome (⌘⇧H)")
         .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 12)
     }
 }

@@ -11,6 +11,14 @@ struct CodexToolbar: View {
                 withAnimation(.easeInOut(duration: 0.18)) { state.sidebarVisible.toggle() }
             }
 
+            // Welcome is where the app opens, and before this there was no way
+            // back to it short of closing every tab.
+            ToolbarIconButton(systemName: "house",
+                              tint: state.selectedTab == nil ? Theme.blue : nil,
+                              help: "Welcome (⌘⇧H)") {
+                state.showWelcome()
+            }
+
             HStack(spacing: 2) {
                 ToolbarIconButton(systemName: "chevron.backward",
                                   help: "Back (⌘[)",

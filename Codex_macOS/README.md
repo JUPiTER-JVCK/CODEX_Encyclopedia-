@@ -126,9 +126,21 @@ Codex_macOS/
 
 ## Known issues
 
-Found by inspection. `swift.yml` now answers "does it compile" on every PR,
-but nothing exercises the UI, so anything about how a thing *looks* is still
-unverified.
+`swift.yml` answers "does it compile" on every PR, but nothing automated
+exercises the UI, so anything about how a thing *looks* is unverified until
+someone opens that screen.
+
+**What one launch found.** The Welcome screen has now been seen on a Mac. In
+a single screenshot it turned up a Quick Start card offering "14 standalone
+network & security utilities" from a `Tools/` directory that does not exist
+(the card did nothing when clicked, and the stat beside it correctly read 0),
+a layer count of 27 against the 23 that `LAYERS.md` states and
+`tools/stats_audit.py` enforces, a subtitle naming a `Codex_v2` directory,
+and a version string three point-releases behind. Every one had survived
+review, CI and a release. They are fixed; the lesson is the ratio — one look
+at one screen, four defects.
+
+The screens below have not had that look yet.
 
 **Not verified on a Mac.** Section indexes now take their name from the
 file's first H1 in the command palette, tab strip, recents and inspector, and

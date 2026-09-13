@@ -81,7 +81,6 @@ enum CodexTree {
         ("Compute",        ["01_", "02_", "03_", "04_", "05_", "06_", "07_", "08_"]),
         ("Network",        ["Network"]),
         ("Cross-cutting",  ["14_", "15_", "16_", "17_", "18_", "19_"]),
-        ("Tools",          ["Tools"]),
     ]
 
     static let subsectionOrder = ["references", "lessons", "languages", "man_pages", "topics", "protocols"]
