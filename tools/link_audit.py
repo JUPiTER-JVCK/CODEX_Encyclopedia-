@@ -108,7 +108,8 @@ def audit(root: str) -> tuple[dict, list, list]:
 
     for path in markdown_files(root):
         stats["files"] += 1
-        raw = open(path, encoding="utf-8").read()
+        with open(path, encoding="utf-8") as fh:
+            raw = fh.read()
         rel = os.path.relpath(path, root)
         if needs_h1(rel) and not re.search(r"^# ", raw, re.M):
             no_h1.append(rel)

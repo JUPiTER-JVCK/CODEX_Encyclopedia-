@@ -39,6 +39,8 @@ struct CommandPaletteView: View {
         )
         .shadow(color: .black.opacity(0.5), radius: 28, y: 12)
         .onAppear { focused = true; selectedIdx = 0; rerank() }
+        // ⌘R while the palette is open replaces the file index under it.
+        .onChange(of: state.treeRevision) { _ in selectedIdx = 0; rerank() }
         // `min(cachedResults.count - 1, …)` yields -1 when nothing matches,
         // which no row can equal and which `scrollTo` cannot resolve. Clamp to
         // the last valid row, or stay at 0 when the list is empty.

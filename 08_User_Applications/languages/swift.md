@@ -90,21 +90,33 @@ let package = Package(
 
 ## Stdlib essentials
 
+The standard library proper — what you get with no imports at all. It ships
+with the compiler and is available wherever Swift runs, Linux and Windows
+included.
+
 | API | Use |
 |-----|-----|
 | `Array`, `Dictionary`, `Set`, `Sequence`, `Collection` | Collections |
 | `Optional<T>` (sugar `T?`) | Null safety |
 | `Result<Success, Failure>` | Sync error type |
 | `String` + `Substring` (value types, COW) | Strings |
-| `Codable` (`Encodable` + `Decodable`) | Serialization |
-| `JSONEncoder`, `JSONDecoder` | JSON |
+| `Encodable` / `Decodable` (together, `Codable`) | Serialization *protocols* |
+| `Task`, `MainActor`, `async let`, `TaskGroup` | Concurrency (Swift 5.5+) |
+
+## Foundation essentials
+
+Not the standard library, though it is easy to assume otherwise — these need
+`import Foundation`, and off Apple platforms they come from
+swift-corelibs-foundation, a separate reimplementation. The distinction is
+invisible on macOS and decides whether your code builds on Linux.
+
+| API | Use |
+|-----|-----|
+| `JSONEncoder`, `JSONDecoder` | The concrete coders behind `Codable` |
 | `URLSession` | HTTP |
 | `FileManager`, `Data`, `URL` | Files |
 | `DateComponents`, `Calendar`, `Locale`, `TimeZone`, `ISO8601DateFormatter` | Time |
-| `OSLog` / `Logger` (`os.log`) | Apple-native logging |
-| `Task`, `MainActor`, `async let`, `TaskGroup` | Concurrency (Swift 5.5+) |
-| `Combine` | Reactive streams (Apple frameworks) |
-| `SwiftData` (iOS 17+) | Persistence (replaces Core Data in many cases) |
+| `OSLog` / `Logger` | Logging — `import os`, Apple platforms only |
 
 ## Frameworks
 

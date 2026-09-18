@@ -133,7 +133,8 @@ def audit(source: str) -> "tuple[list[str], list[tuple[str, list[str]]]]":
 
 def self_test() -> int:
     """Prove the check can fail, on a copy with one value altered."""
-    source = open(SOURCE, encoding="utf-8").read()
+    with open(SOURCE, encoding="utf-8") as fh:
+        source = fh.read()
     clean, _ = audit(source)
     if clean:
         print("self-test inconclusive: the real source already has faults")
@@ -160,7 +161,8 @@ def main() -> int:
     if "--self-test" in sys.argv:
         return self_test()
 
-    source = open(SOURCE, encoding="utf-8").read()
+    with open(SOURCE, encoding="utf-8") as fh:
+        source = fh.read()
     faults, detail = audit(source)
     total_values = sum(len(v) for _, v in palettes(source))
     total_derived = sum(len(d) for _, d in detail)

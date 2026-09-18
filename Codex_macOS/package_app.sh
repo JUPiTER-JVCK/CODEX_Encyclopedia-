@@ -46,11 +46,17 @@ if [ "$DO_UNIVERSAL" = true ]; then
     echo "→ swift build -c $CONFIG --arch x86_64"
     swift build -c "$CONFIG" --arch x86_64
     echo "→ lipo: creating universal binary"
+    # Not `.build/$CONFIG/Codex`. That path is a SwiftPM symlink pointing at
+    # whichever triple built last — x86_64, here — so it names lipo's own
+    # second input, and the command would write its output over a file it is
+    # reading. Somewhere of its own, outside the symlinked tree.
+    EXE="$PKG_DIR/.build/universal-$CONFIG/Codex"
     mkdir -p "$(dirname "$EXE")"
     lipo -create \
         "$PKG_DIR/.build/arm64-apple-macosx/$CONFIG/Codex" \
         "$PKG_DIR/.build/x86_64-apple-macosx/$CONFIG/Codex" \
         -output "$EXE"
+    lipo -info "$EXE"
 else
     echo "→ swift build -c $CONFIG"
     swift build -c "$CONFIG"

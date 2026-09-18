@@ -51,7 +51,7 @@
 
 ## Frameworks & models
 - **Linux device model** — `struct device`, `struct bus_type`, `struct driver`
-- **Windows WDM / KMDF / UMDF** — layered framework progression
+- **Windows WDM / KMDF / UMDF** — one legacy model and two sibling frameworks
 - **macOS IOKit (legacy) vs DriverKit (current)**
 - **Userspace drivers** — VFIO, UIO, libusb, DPDK, SPDK
 

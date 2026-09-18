@@ -48,7 +48,7 @@
 6. **Container 101** — build an image, push to a registry, run via runc and via Docker.
 7. **Kubernetes basics** — deployment, service, ingress; apply, get, describe, logs.
 8. **Init container & sidecar** — pattern walk-through with a logging sidecar.
-9. **Wasm sandbox** — compile Rust → wasm32-wasi; run under wasmtime.
+9. **Wasm sandbox** — compile Rust → wasm32-wasip1; run under wasmtime.
 10. **Embedding a runtime** — embed V8 in a C++ app, or wasmtime in Rust.
 
 ## Suggested external

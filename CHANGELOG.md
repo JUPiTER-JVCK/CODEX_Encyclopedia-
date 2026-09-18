@@ -5,11 +5,85 @@
 ```text
   Version history for the CODEX Encyclopedia repository.
 
-  ┌─── release history ───────────────────────────────────────────────────┐
-  │  v3.6 (2026-09-09) — first tagged release; licensing; audit tools    │
-  │  v3.5 and earlier  — untagged history (licensing gaps documented)     │
-  └──────────────────────────────────────────────────────────────────────┘
+  ┌─── release history ────────────────────────────────────────────────┐
+  │  v3.6.25 (2026-09-16) — reader overhaul; diagrams on every index   │
+  │  v3.6    (2026-09-09) — first tagged release; licensing; audits    │
+  │  v3.5 and earlier     — untagged history (licensing gaps noted)    │
+  └────────────────────────────────────────────────────────────────────┘
 ```
+
+## v3.6.25 — 2026-09-16
+
+A ten-stage pass over the macOS reader and the codex's diagram coverage,
+shipped as PRs #16–#25. The version number is the release's, not the app's
+alone: `CFBundleShortVersionString` is now the single source both read from.
+
+### Fixed — the reader's controls
+
+The app had been *seen running* exactly once before this work, and that one
+look found four defects that review, CI and a release had all passed. A survey
+found eleven more. They shared a shape: each looked live and was not.
+
+- Inspector outline rows had hover highlights and no tap action.
+- Anchor navigation was parsed end to end and dropped in two places, so every
+  cross-file `file.md#section` link opened at the top of its target.
+- The breadcrumb was a bare `Text`; the README advertised it as clickable.
+- The toolbar "search field" was a `Button` — typing did nothing.
+- The pin button rendered enabled while disabled.
+- The unpin `×` was a `Button` nested in another `Button`'s label.
+- Traffic lights were not given a leading inset and overlapped the sidebar
+  toggle.
+
+Vibrancy was not merely suspect but actively defeated: two surfaces sampled
+behind the window while an opaque fill was painted over both.
+
+### Fixed — 48 documents with colliding anchors
+
+Wiring the outline up was the first thing ever to *consume* heading anchors,
+and it proved the scheme had never been unique — worst case nine `synopsis`
+in one man-page file. Scroll ids are now resolved once in `DocumentStore`,
+deduplicated the way GitHub does it, which also retired the outline's separate
+and disagreeing second parse of every document.
+
+### Added — reading column, themes, text scale
+
+A centred column with a width control, replacing a layout that pinned prose
+left and collected all its slack in one dead zone. Fourteen colour schemes
+(Catppuccin ×4, Nord, Gruvbox, Solarized, Tokyo Night, Dracula, Rosé Pine),
+an OLED modifier that composes with any dark theme rather than doubling the
+list, and a text scale — reached through a new Appearance panel (⌘,) that
+persists to its own `preferences.json`, never `state.json`.
+
+### Changed — tabs are your pins
+
+Tabs previously accumulated without bound: every open appended one. They are
+now your pinned files plus the single thing you are reading.
+
+### Added — a diagram in every section index
+
+`diagram_audit.py` had been green while checking 23 of 277 files. Widened to
+section indexes and content notes, to recognise the ASCII style already in
+use, to width-check every fenced line rather than only those already
+containing a box character, and to enforce the ```` ```text ```` tag that
+`STRUCTURE.md` documents and 223 blocks omitted.
+
+Then the gap it exposed was filled: ~170 diagrams across all four bands. Each
+section index maps its own notes and how they relate, derived from the files
+actually present, rather than carrying a decorative box.
+
+Four existing diagrams were wrong, which is worse than absent, and were fixed
+— including a logic-gate diagram that promised eight gates, drew four, and
+drew AND with the buffer triangle, making it indistinguishable from YES.
+
+### Fixed — performance and correctness
+
+The command palette ranked every file six times per keystroke from a computed
+property. The inspector read and re-parsed the open document three times per
+redraw. The sidebar threaded one hover binding through every row, so all rows
+redrew on any hover, and `CodexNode.id` was a fresh `UUID()` per build, which
+discarded every expansion state on reload. `NavigationHistory` had no cap.
+`package_app.sh` built host-arch only, so the shipped app ran under Rosetta
+on Apple Silicon.
 
 ## v3.6 — 2026-09-09
 

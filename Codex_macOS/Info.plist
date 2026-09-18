@@ -19,9 +19,9 @@
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleShortVersionString</key>
-    <string>3.6</string>
+    <string>3.6.25</string>
     <key>CFBundleVersion</key>
-    <string>3.6</string>
+    <string>3.6.25</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>LSMinimumSystemVersion</key>
@@ -35,7 +35,7 @@
     <key>LSUIElement</key>
     <false/>
     <key>NSHumanReadableCopyright</key>
-    <string>Codex v3.6 — Computing Stack Knowledge Base</string>
+    <string>Copyright © 2026 JUPiTER-JVCK. MIT licensed; the codex itself CC BY-SA 4.0.</string>
     <key>NSSupportsAutomaticTermination</key>
     <true/>
     <key>NSSupportsSuddenTermination</key>

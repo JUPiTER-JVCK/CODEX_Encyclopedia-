@@ -197,7 +197,13 @@ enum CodexTree {
             .replacingOccurrences(of: "Http", with: "HTTP")
             .replacingOccurrences(of: "Tcp", with: "TCP")
             .replacingOccurrences(of: "Udp", with: "UDP")
-            .replacingOccurrences(of: "\\bIp\\b", with: "IP", options: .regularExpression)
+            // Matches Ip only where it is the protocol: alone, or heading Ipv4 /
+            // Ipv6 / Ipsec. A plain `\bIp\b` was tried first and was a net loss —
+            // it protected `Ipc`, which no file in the codex is named, while
+            // turning the two that exist ("IPv4 IPv6", "Tls IPsec") back into
+            // "Ipv4 Ipv6" and "Tls Ipsec".
+            .replacingOccurrences(of: "\\bIp(?=v[46]\\b|sec\\b|\\b)", with: "IP",
+                                  options: .regularExpression)
             .replacingOccurrences(of: "Os ", with: "OS ")
             .replacingOccurrences(of: "Bios", with: "BIOS")
             .replacingOccurrences(of: "Uart", with: "UART")

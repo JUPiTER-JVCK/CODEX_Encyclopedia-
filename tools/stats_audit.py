@@ -149,7 +149,8 @@ def main() -> int:
     for filename, key, label, pattern in CLAIMS:
         path = os.path.join(args.root, filename)
         try:
-            text = open(path, encoding="utf-8").read()
+            with open(path, encoding="utf-8") as fh:
+                text = fh.read()
         except OSError as exc:
             faults.append(("NOT FOUND", label, f"{filename}: {exc}"))
             continue

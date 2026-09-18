@@ -47,7 +47,8 @@ def count_columns(line: str) -> int:
 
 def audit_file(path: str) -> list[tuple[int, str, str]]:
     faults: list[tuple[int, str, str]] = []
-    lines = open(path, encoding="utf-8").read().split("\n")
+    with open(path, encoding="utf-8") as fh:
+        lines = fh.read().split("\n")
     in_fence = False
 
     for i, line in enumerate(lines):
